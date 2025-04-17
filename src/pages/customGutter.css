@@ -1,0 +1,16 @@
+.custom-gutter-horizontal {
+    padding: 0px;
+    height: 100%;
+    width: 8px;
+    background: rgb(56, 56, 56);
+    border-radius: 4px;
+    margin: 0px 10px;
+
+  }
+  .custom-gutter-horizontal:hover {
+    cursor: col-resize;
+  }
+  
+  .custom-dragger-horizontal {
+    display: none;
+  }
