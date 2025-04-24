@@ -3,7 +3,6 @@ import DefaultLayout from "@/layouts/default";
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
 import "./customGutter.css";
 import {
-  Snippet,
   ScrollShadow,
   Card,
   CardHeader,
@@ -17,6 +16,7 @@ import { useState } from "react";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import CodeMirror from "@uiw/react-codemirror";
 
+import folder from "../image/folder.png";
 import { getCurrentFrame } from "../shapes/init"; // Import the function to get the current frame
 import { executeCommand } from "../command/index";
 export default function App() {
@@ -24,15 +24,26 @@ export default function App() {
   const [frame, setFrame] = useState<{ width: number; height: number } | null>(
     null
   ); // State for the frame
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleRun = () => {
     if (code.trim()) {
-      executeCommand(code.trim());
-      const updatedFrame = getCurrentFrame(); // Get the updated frame
+      const error = executeCommand(code.trim());
 
-      setFrame(updatedFrame); // Update the frame state
+      console.log(error); // ตรวจสอบค่าของ error
+
+      if (error.length > 0) {
+        setErrorMessage(error.join("\n")); // แยกข้อความด้วย Enter
+
+        return;
+      }
+
+      const updatedFrame = getCurrentFrame();
+
+      setFrame(updatedFrame);
+      setErrorMessage(null);
     } else {
-      console.error("No command provided.");
+      setErrorMessage("No command provided.");
     }
   };
 
@@ -47,7 +58,7 @@ export default function App() {
         <div className="h-full">
           <Card className="h-full">
             <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-              <h4 className="font-bold text-large">CAD Canvas</h4>
+              <h4 className="font-bold text-2xl p-5">CAD Canvas</h4>
             </CardHeader>
             <CardBody className="overflow-visible py-2 h-full">
               <ScrollShadow className="w-full h-full">
@@ -68,7 +79,6 @@ export default function App() {
                 )}
               </ScrollShadow>
             </CardBody>
-            <p className="font-bold text-2xl p-5">Geometric</p>
           </Card>
         </div>
         <div className="h-full pb-8">
@@ -76,7 +86,10 @@ export default function App() {
             <Tab key="Code" className="h-full" title="Code">
               <Card className="pt-4 h-full">
                 <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-                  <h4 className="font-bold text-large">Edit Your CAD Code</h4>
+                  <p className="flex flex-row items-center space-x-2">
+                    <h4 className="font-bold text-large">Edit Your CAD Code</h4>
+                    <img alt="Folder Icon" className="w-6 h-6" src={folder} />
+                  </p>
                 </CardHeader>
                 <CardBody className="overflow-visible py-2 h-full">
                   <CodeMirror
@@ -85,16 +98,22 @@ export default function App() {
                     onChange={(value: string) => setCode(value)}
                   />
                 </CardBody>
-                <CardFooter className="bg-white/10 bottom-0 border-t-10 flex justify-end">
-                  <Button
-                    className="text-tiny"
-                    color="primary"
-                    radius="full"
-                    size="sm"
-                    onClick={handleRun}
-                  >
-                    Run
-                  </Button>
+                <CardFooter className="bg-white/10 bottom-0 border-t-10 flex justify-between">
+                  <pre>
+                    {errorMessage && (
+                      <p className=" px-4 py-2 text-red-500 font-semibold text-sm">
+                        {errorMessage}
+                      </p>
+                    )}
+                  </pre>
+                  <div>
+                    <Button
+                      className="text-sm px-8 py-2 font-semibold text-white bg-pink-500 hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-300 rounded-full shadow-md transition-all duration-300"
+                      onClick={handleRun}
+                    >
+                      Run
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             </Tab>
@@ -102,7 +121,7 @@ export default function App() {
               <Card>
                 <CardBody>
                   <ScrollShadow className="w-full h-[510px]">
-                   <p></p>
+                    <p />
                   </ScrollShadow>
                 </CardBody>
               </Card>
