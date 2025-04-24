@@ -16,7 +16,6 @@ function App() {
       <Route element={<BlogPage />} path="/blog" />
       <Route element={<AboutPage />} path="/about" />
       <Route element={<CanvasPage />} path="/canvas" />
-
     </Routes>
   );
 }
