@@ -8,15 +8,34 @@ import {
   Card,
   CardHeader,
   CardBody,
-  Image,
   CardFooter,
   Button,
   Tabs,
   Tab,
 } from "@heroui/react";
+import { useState } from "react";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import CodeMirror from "@uiw/react-codemirror";
+
+import { getCurrentFrame } from "../shapes/init"; // Import the function to get the current frame
+import { executeCommand } from "../command/index";
 export default function App() {
+  const [code, setCode] = useState<string>("");
+  const [frame, setFrame] = useState<{ width: number; height: number } | null>(
+    null
+  ); // State for the frame
+
+  const handleRun = () => {
+    if (code.trim()) {
+      executeCommand(code.trim());
+      const updatedFrame = getCurrentFrame(); // Get the updated frame
+
+      setFrame(updatedFrame); // Update the frame state
+    } else {
+      console.error("No command provided.");
+    }
+  };
+
   return (
     <DefaultLayout>
       <Splitter
@@ -26,20 +45,30 @@ export default function App() {
         initialSizes={[60, 40]}
       >
         <div className="h-full">
-          <Card className="py-4 h-full">
+          <Card className="h-full">
             <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-              <p className="text-tiny uppercase font-bold">Daily Mix</p>
-              <small className="text-default-500">12 Tracks</small>
-              <h4 className="font-bold text-large">Frontend Radio</h4>
+              <h4 className="font-bold text-large">CAD Canvas</h4>
             </CardHeader>
-            <CardBody className="overflow-visible py-2">
-              <Image
-                alt="Card background"
-                className="object-cover rounded-xl"
-                src="https://heroui.com/images/hero-card-complete.jpeg"
-                width={270}
-              />
+            <CardBody className="overflow-visible py-2 h-full">
+              <ScrollShadow className="w-full h-full">
+                {frame ? (
+                  <div
+                    className="border border-white"
+                    style={{
+                      width: `${frame.width}px`,
+                      height: `${frame.height}px`,
+                    }}
+                  >
+                    Frame: {frame.width} x {frame.height}
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500">
+                    No frame initialized.
+                  </p>
+                )}
+              </ScrollShadow>
             </CardBody>
+            <p className="font-bold text-2xl p-5">Geometric</p>
           </Card>
         </div>
         <div className="h-full pb-8">
@@ -50,7 +79,11 @@ export default function App() {
                   <h4 className="font-bold text-large">Edit Your CAD Code</h4>
                 </CardHeader>
                 <CardBody className="overflow-visible py-2 h-full">
-                  <CodeMirror height="100%" theme={vscodeDark} />
+                  <CodeMirror
+                    height="100%"
+                    theme={vscodeDark}
+                    onChange={(value: string) => setCode(value)}
+                  />
                 </CardBody>
                 <CardFooter className="bg-white/10 bottom-0 border-t-10 flex justify-end">
                   <Button
@@ -58,6 +91,7 @@ export default function App() {
                     color="primary"
                     radius="full"
                     size="sm"
+                    onClick={handleRun}
                   >
                     Run
                   </Button>
@@ -68,41 +102,7 @@ export default function App() {
               <Card>
                 <CardBody>
                   <ScrollShadow className="w-full h-[510px]">
-                    <p>
-                      Sit nulla est ex deserunt exercitation anim occaecat.
-                      Nostrud ullamco deserunt aute id consequat veniam
-                      incididunt duis in sint irure nisi. Mollit officia cillum
-                      Lorem ullamco minim nostrud elit officia tempor esse quis.
-                    </p>
-                    <Snippet>npm install @heroui/react</Snippet>
-                    <p>
-                      Sunt ad dolore quis aute consequat. Magna exercitation
-                      reprehenderit magna aute tempor cupidatat consequat elit
-                      dolor adipisicing. Mollit dolor eiusmod sunt ex incididunt
-                      cillum quis. Velit duis sit officia eiusmod Lorem aliqua
-                      enim laboris do dolor eiusmod. Et mollit incididunt nisi
-                      consectetur esse laborum eiusmod pariatur proident Lorem
-                      eiusmod et. Culpa deserunt nostrud ad veniam.
-                    </p>
-                    <Snippet>npm install @heroui/react</Snippet>
-                    <p>
-                      Sunt ad dolore quis aute consequat. Magna exercitation
-                      reprehenderit magna aute tempor cupidatat consequat elit
-                      dolor adipisicing. Mollit dolor eiusmod sunt ex incididunt
-                      cillum quis. Velit duis sit officia eiusmod Lorem aliqua
-                      enim laboris do dolor eiusmod. Et mollit incididunt nisi
-                      consectetur esse laborum eiusmod pariatur proident Lorem
-                      eiusmod et. Culpa deserunt nostrud ad veniam.
-                    </p>
-                    <p>
-                      Sunt ad dolore quis aute consequat. Magna exercitation
-                      reprehenderit magna aute tempor cupidatat consequat elit
-                      dolor adipisicing. Mollit dolor eiusmod sunt ex incididunt
-                      cillum quis. Velit duis sit officia eiusmod Lorem aliqua
-                      enim laboris do dolor eiusmod. Et mollit incididunt nisi
-                      consectetur esse laborum eiusmod pariatur proident Lorem
-                      eiusmod et. Culpa deserunt nostrud ad veniam.
-                    </p>
+                   <p></p>
                   </ScrollShadow>
                 </CardBody>
               </Card>
