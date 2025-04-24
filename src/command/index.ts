@@ -1,18 +1,27 @@
 import { init } from "../shapes/init";
 
-const commandRegistry: Record<string, (command: string) => void> = {
+const commandRegistry: Record<string, (command: string) => string | null> = {
   INIT: init,
 };
 
-export function executeCommand(input: string): void {
-  const [commandName, ...args] = input.trim().split(/\s+/);
-  const command = commandName.toUpperCase();
+export function executeCommand(input: string): string[] {
+  const results: string[] = [];
+  const commands = input.trim().split(/\r?\n/); // Split commands by newline
 
-  const handler = commandRegistry[command];
-  if (!handler) {
-    console.error(`Unknown command: ${command}`);
-    return;
+  for (const line of commands) {
+    const [commandName] = line.trim().split(/\s+/);
+    const command = commandName.toUpperCase();
+
+    const handler = commandRegistry[command];
+    if (!handler) {
+      results.push(`Unknown command: ${command}`);
+    } else {
+      const result = handler(line);
+      if (result) {
+        results.push(result);
+      }
+    }
   }
 
-  handler(input);
+  return results;
 }
