@@ -86,10 +86,10 @@ export default function App() {
             <Tab key="Code" className="h-full" title="Code">
               <Card className="pt-4 h-full">
                 <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-                  <p className="flex flex-row items-center space-x-2">
-                    <h4 className="font-bold text-large">Edit Your CAD Code</h4>
+                  <div className="flex flex-row items-center space-x-2">
+                    <p className="font-bold text-large">Edit Your CAD Code</p>
                     <img alt="Folder Icon" className="w-6 h-6" src={folder} />
-                  </p>
+                  </div>
                 </CardHeader>
                 <CardBody className="overflow-visible py-2 h-full">
                   <CodeMirror
@@ -109,7 +109,7 @@ export default function App() {
                   <div>
                     <Button
                       className="text-sm px-8 py-2 font-semibold text-white bg-pink-500 hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-300 rounded-full shadow-md transition-all duration-300"
-                      onClick={handleRun}
+                      onPress={handleRun}
                     >
                       Run
                     </Button>
