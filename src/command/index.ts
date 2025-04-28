@@ -1,12 +1,20 @@
 import { init } from "../shapes/init";
+import { circle } from "../shapes/circle";
 
-const commandRegistry: Record<string, (command: string) => string | null> = {
-  INIT: init,
+export type DrawData = {
+  type: "circle";
+  points: [number, number][];
 };
 
-export function executeCommand(input: string): string[] {
-  const results: string[] = [];
-  const commands = input.trim().split(/\r?\n/); // Split commands by newline
+const commandRegistry: Record<string, (command: string) => string | null | DrawData> = {
+  INIT: init,
+  CIR : circle,
+};
+
+export function executeCommand(input: string): { errors: string[]; drawData: DrawData[] } {
+  const errors: string[] = [];
+  const drawData: DrawData[] = [];
+  const commands = input.trim().split(/\r?\n/);
 
   for (const line of commands) {
     const [commandName] = line.trim().split(/\s+/);
@@ -14,14 +22,16 @@ export function executeCommand(input: string): string[] {
 
     const handler = commandRegistry[command];
     if (!handler) {
-      results.push(`Unknown command: ${command}`);
+      errors.push(`Unknown command: ${command}`);
     } else {
       const result = handler(line);
-      if (result) {
-        results.push(result);
+      if (typeof result === "string") {
+        errors.push(result);
+      } else if (result) {
+        drawData.push(result);
       }
     }
   }
 
-  return results;
+  return { errors, drawData };
 }
