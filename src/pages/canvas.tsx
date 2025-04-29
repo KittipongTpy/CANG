@@ -2,58 +2,46 @@ import Splitter, { SplitDirection } from "@devbookhq/splitter";
 import {
   ScrollShadow,
   Card,
-  CardHeader, 
+  CardHeader,
   CardBody,
   CardFooter,
   Button,
   Tabs,
   Tab,
 } from "@heroui/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import CodeMirror from "@uiw/react-codemirror";
-import * as THREE from "three";
 
-import { renderCanvas } from "../command/render";
 import folder from "../image/folder.png";
-import { getCurrentFrame } from "../shapes/init";
-import { executeCommand } from "../command/index";
+import FrameComponent from "@/shapes/frame";
+
 
 import DefaultLayout from "@/layouts/default";
 
 export default function App() {
   const [code, setCode] = useState<string>("");
-  const [frame, setFrame] = useState<{ width: number; height: number } | null>(
+  const [frame, setFrame] = useState<{ x: number; y: number } | null>(
     null
   );
+  const [codeCommand, setCodeCommand] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const mountRef = useRef<HTMLDivElement>(null);
 
   const handleRun = () => {
+    setErrorMessage(null); // Reset error message
     if (!code.trim()) {
       setErrorMessage("No command provided.");
-
       return;
     }
-    const { errors, drawData } = executeCommand(code.trim());
 
-    if (errors.length > 0) {
-      setErrorMessage(errors.join("\n"));
-
+    const initFrame = code.trim().split(/\n/)[0].split(/\s+/);
+    if (initFrame.length !== 3 || initFrame[0].toUpperCase() !== "INIT") {
+      console.log(initFrame.length);
+      setErrorMessage("Syntax error: Use INIT <width> <height>");
       return;
-    }
-    const updatedFrame = getCurrentFrame();
-
-    if (!updatedFrame) {
-      setErrorMessage("Frame not initialized.");
-
-      return;
-    }
-    setFrame(updatedFrame); // อัปเดต Frame เพื่อ render div ขนาดถูกต้อง
-    setErrorMessage(null);
-
-    if (mountRef.current) {
-      renderCanvas(mountRef.current, updatedFrame, drawData);
+    } else {
+      setFrame({ x: parseInt(initFrame[1]), y: parseInt(initFrame[2]) });
+      setCodeCommand(code.trim().split(/\n/).slice(1).join("\n"));
     }
   };
 
@@ -74,20 +62,23 @@ export default function App() {
             </CardHeader>
             <CardBody className="overflow-visible py-2 h-full">
               <ScrollShadow className="w-full h-full">
-                {frame ? (
-                  <div
-                    ref={mountRef}
-                    className="border border-white"
-                    style={{
-                      width: `${frame.width}px`,
-                      height: `${frame.height}px`,
-                    }}
-                  />
-                ) : (
+                <div className="items-center justify-center h-full">
+                  {frame && (
+                    <FrameComponent
+                      x={frame.x}
+                      y={frame.y}
+                      bgColor="#FFFFFF"
+                      drawData={code}
+                    />
+                  )}
+                  {/* {!frame && (
                   <p className="text-center text-gray-500">
                     No frame initialized.
                   </p>
-                )}
+                )} */}
+
+                </div>
+
               </ScrollShadow>
             </CardBody>
           </Card>
