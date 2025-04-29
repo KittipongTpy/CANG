@@ -36,7 +36,6 @@ export function executeCommand(input: string): {
       errors.push(`Unknown command: ${command}`);
     } else {
       const result = handler(line);
-
       if (typeof result === "string") {
         errors.push(result);
       } else if (result) {

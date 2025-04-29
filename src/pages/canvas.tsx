@@ -2,7 +2,7 @@ import Splitter, { SplitDirection } from "@devbookhq/splitter";
 import {
   ScrollShadow,
   Card,
-  CardHeader,
+  CardHeader, 
   CardBody,
   CardFooter,
   Button,
@@ -10,11 +10,14 @@ import {
   Tab,
 } from "@heroui/react";
 import { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import CodeMirror from "@uiw/react-codemirror";
+import * as THREE from "three";
 
 import { renderCanvas } from "../command/render";
 import folder from "../image/folder.png";
+import { getCurrentFrame } from "../shapes/init";
 import { getCurrentFrame } from "../shapes/init";
 import { executeCommand } from "../command/index";
 
@@ -65,6 +68,7 @@ export default function App() {
         initialSizes={[60, 40]}
       >
         {/* ด้านซ้าย: Canvas */}
+        {/* ด้านซ้าย: Canvas */}
         <div className="h-full">
           <Card className="h-full">
             <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
@@ -75,11 +79,13 @@ export default function App() {
                 {frame ? (
                   <div
                     ref={mountRef}
+                    ref={mountRef}
                     className="border border-white"
                     style={{
                       width: `${frame.width}px`,
                       height: `${frame.height}px`,
                     }}
+                  />
                   />
                 ) : (
                   <p className="text-center text-gray-500">
@@ -90,6 +96,8 @@ export default function App() {
             </CardBody>
           </Card>
         </div>
+
+        {/* ด้านขวา: Editor */}
 
         {/* ด้านขวา: Editor */}
         <div className="h-full pb-8">
