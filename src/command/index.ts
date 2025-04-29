@@ -1,14 +1,16 @@
 import { init } from "../shapes/init";
 import { circle } from "../shapes/circle";
+import { ellipse } from "../shapes/ellipse";
 
-export type DrawData = {
-  type: "circle";
-  points: [number, number][];
-};
+export type DrawData = 
+  | { type: "circle"; points: [number, number][] }
+  | { type: "ellipse"; points: [number, number][] };
+
 
 const commandRegistry: Record<string, (command: string) => string | null | DrawData> = {
   INIT: init,
   CIR : circle,
+  ELI: ellipse,
 };
 
 export function executeCommand(input: string): { errors: string[]; drawData: DrawData[] } {
