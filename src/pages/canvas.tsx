@@ -1,9 +1,8 @@
-import DefaultLayout from "@/layouts/default";
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
 import {
   ScrollShadow,
   Card,
-  CardHeader, 
+  CardHeader,
   CardBody,
   CardFooter,
   Button,
@@ -19,25 +18,34 @@ import folder from "../image/folder.png";
 import { getCurrentFrame } from "../shapes/init";
 import { executeCommand } from "../command/index";
 
+import DefaultLayout from "@/layouts/default";
+
 export default function App() {
   const [code, setCode] = useState<string>("");
-  const [frame, setFrame] = useState<{ width: number; height: number } | null>(null);
+  const [frame, setFrame] = useState<{ width: number; height: number } | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const mountRef = useRef<HTMLDivElement>(null); 
+  const mountRef = useRef<HTMLDivElement>(null);
 
   const handleRun = () => {
     if (!code.trim()) {
       setErrorMessage("No command provided.");
+
       return;
     }
     const { errors, drawData } = executeCommand(code.trim());
+
     if (errors.length > 0) {
       setErrorMessage(errors.join("\n"));
+
       return;
     }
     const updatedFrame = getCurrentFrame();
+
     if (!updatedFrame) {
       setErrorMessage("Frame not initialized.");
+
       return;
     }
     setFrame(updatedFrame); // อัปเดต Frame เพื่อ render div ขนาดถูกต้อง
@@ -47,12 +55,17 @@ export default function App() {
       const scene = new THREE.Scene();
 
       const camera = new THREE.OrthographicCamera(
-        -updatedFrame.width / 2, updatedFrame.width / 2,
-        updatedFrame.height / 2, -updatedFrame.height / 2,
-        1, 1000
+        -updatedFrame.width / 2,
+        updatedFrame.width / 2,
+        updatedFrame.height / 2,
+        -updatedFrame.height / 2,
+        1,
+        1000,
       );
+
       camera.position.z = 10;
       const renderer = new THREE.WebGLRenderer({ alpha: true });
+
       renderer.setSize(updatedFrame.width, updatedFrame.height);
 
       mountRef.current.innerHTML = ""; // ล้าง div เดิม
@@ -66,6 +79,7 @@ export default function App() {
         new THREE.Vector3(updatedFrame.width / 2, 0, 0),
       ];
       const geometryX = new THREE.BufferGeometry().setFromPoints(pointsX);
+
       scene.add(new THREE.Line(geometryX, axisMaterial));
 
       // แกน Y (แนวตั้ง)
@@ -74,6 +88,7 @@ export default function App() {
         new THREE.Vector3(0, updatedFrame.height / 2, 0),
       ];
       const geometryY = new THREE.BufferGeometry().setFromPoints(pointsY);
+
       scene.add(new THREE.Line(geometryY, axisMaterial));
       // วาดวงกลม (จาก drawData)
       drawData.forEach((item) => {
@@ -83,6 +98,7 @@ export default function App() {
               const geometry = new THREE.CircleGeometry(1, 8);
               const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
               const mesh = new THREE.Mesh(geometry, material);
+
               mesh.position.set(x, y, 0);
               scene.add(mesh);
             });
@@ -95,6 +111,7 @@ export default function App() {
               const geometry = new THREE.CircleGeometry(1, 8);
               const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
               const mesh = new THREE.Mesh(geometry, material);
+
               mesh.position.set(x, y, 0);
               scene.add(mesh);
             });
@@ -108,12 +125,12 @@ export default function App() {
               const geometry = new THREE.CircleGeometry(1, 8);
               const material = new THREE.MeshBasicMaterial({ color: 0xff00ff }); // ชมพู
               const mesh = new THREE.Mesh(geometry, material);
+
               mesh.position.set(x, y, 0);
               scene.add(mesh);
             });
           }
         }
-        
       });
       // ✅ render หลังวาดครบทั้งหมด
       renderer.render(scene, camera);
@@ -197,7 +214,10 @@ export default function App() {
               <Card>
                 <CardBody>
                   <ScrollShadow className="w-full h-[510px]">
-                    <p> {/* เอาไว้เพิ่มคู่มือ syntax เช่น INIT, CIR เป็นต้น */} </p>
+                    <p>
+                      {" "}
+                      {/* เอาไว้เพิ่มคู่มือ syntax เช่น INIT, CIR เป็นต้น */}{" "}
+                    </p>
                   </ScrollShadow>
                 </CardBody>
               </Card>
