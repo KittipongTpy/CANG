@@ -1,10 +1,14 @@
 export function ellipse(
   command: string,
-): string | { type: "ellipse"; points: [number, number][] } | null {
+): string | { type: "ellipse"; points: [number, number][]; color?: string } | null {
   const parts = command.trim().split(/\s+/);
 
-  if (parts.length !== 5 || parts[0].toUpperCase() !== "ELI") {
-    return "Syntax error: Use ELI <cx> <cy> <rx> <ry>";
+  if (parts.length !== 5 && parts.length !== 7) {
+    return "Syntax error: Use ELI <cx> <cy> <rx> <ry> [FIL <color>]";
+  }
+
+  if (parts[0].toUpperCase() !== "ELI") {
+    return "Syntax error: Use ELI <cx> <cy> <rx> <ry> [FIL <color>]";
   }
 
   const [, cxStr, cyStr, rxStr, ryStr] = parts;
@@ -24,7 +28,6 @@ export function ellipse(
 
   let x = 0;
   let y = ry;
-
   let rx2 = rx * rx;
   let ry2 = ry * ry;
   let tworx2 = 2 * rx2;
@@ -34,13 +37,11 @@ export function ellipse(
 
   // Region 1
   let p = Math.round(ry2 - rx2 * ry + 0.25 * rx2);
-
   while (px < py) {
     points.push([cx + x, cy + y]);
     points.push([cx - x, cy + y]);
     points.push([cx + x, cy - y]);
     points.push([cx - x, cy - y]);
-
     x++;
     px += twory2;
     if (p < 0) {
@@ -61,7 +62,6 @@ export function ellipse(
     points.push([cx - x, cy + y]);
     points.push([cx + x, cy - y]);
     points.push([cx - x, cy - y]);
-
     y--;
     py -= tworx2;
     if (p > 0) {
@@ -73,5 +73,13 @@ export function ellipse(
     }
   }
 
-  return { type: "ellipse", points };
+  let color: string | undefined;
+  if (parts.length === 7) {
+    if (parts[5].toUpperCase() !== "FIL") {
+      return "Syntax error: Expected FIL before color value.";
+    }
+    color = parts[6];
+  }
+
+  return { type: "ellipse", points, color };
 }
