@@ -88,8 +88,20 @@ export default function App() {
             });
           }
         }
+        //วาดวงรี
+        if (item.type === "ellipse") {
+          if (item.points && item.points.length > 0) {
+            item.points.forEach(([x, y]) => {
+              const geometry = new THREE.CircleGeometry(1, 8);
+              const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+              const mesh = new THREE.Mesh(geometry, material);
+              mesh.position.set(x, y, 0);
+              scene.add(mesh);
+            });
+          }
+        }
+        
       });
-
       // ✅ render หลังวาดครบทั้งหมด
       renderer.render(scene, camera);
     }
