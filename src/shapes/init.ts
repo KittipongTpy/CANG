@@ -27,10 +27,6 @@ export function init(command: string): string | null {
     return "Syntax error: Width/height must be positive";
   }
 
-  if (currentFrame !== null) {
-    return "Syntax error: Frame set only once.";
-  }
-
   currentFrame = { width, height };
   console.log("Frame initialized:", currentFrame);
 

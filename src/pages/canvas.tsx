@@ -12,8 +12,8 @@ import {
 import { useRef, useState } from "react";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import CodeMirror from "@uiw/react-codemirror";
-import * as THREE from "three";
 
+import { renderCanvas } from "../command/render";
 import folder from "../image/folder.png";
 import { getCurrentFrame } from "../shapes/init";
 import { executeCommand } from "../command/index";
@@ -23,7 +23,7 @@ import DefaultLayout from "@/layouts/default";
 export default function App() {
   const [code, setCode] = useState<string>("");
   const [frame, setFrame] = useState<{ width: number; height: number } | null>(
-    null,
+    null
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const mountRef = useRef<HTMLDivElement>(null);
@@ -52,88 +52,7 @@ export default function App() {
     setErrorMessage(null);
 
     if (mountRef.current) {
-      const scene = new THREE.Scene();
-
-      const camera = new THREE.OrthographicCamera(
-        -updatedFrame.width / 2,
-        updatedFrame.width / 2,
-        updatedFrame.height / 2,
-        -updatedFrame.height / 2,
-        1,
-        1000,
-      );
-
-      camera.position.z = 10;
-      const renderer = new THREE.WebGLRenderer({ alpha: true });
-
-      renderer.setSize(updatedFrame.width, updatedFrame.height);
-
-      mountRef.current.innerHTML = ""; // ล้าง div เดิม
-      mountRef.current.appendChild(renderer.domElement); // ใส่ WebGL Canvas ใหม่
-      // --------- วาดแกน X และ Y -------------
-      const axisMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
-
-      // แกน X (แนวนอน)
-      const pointsX = [
-        new THREE.Vector3(-updatedFrame.width / 2, 0, 0),
-        new THREE.Vector3(updatedFrame.width / 2, 0, 0),
-      ];
-      const geometryX = new THREE.BufferGeometry().setFromPoints(pointsX);
-
-      scene.add(new THREE.Line(geometryX, axisMaterial));
-
-      // แกน Y (แนวตั้ง)
-      const pointsY = [
-        new THREE.Vector3(0, -updatedFrame.height / 2, 0),
-        new THREE.Vector3(0, updatedFrame.height / 2, 0),
-      ];
-      const geometryY = new THREE.BufferGeometry().setFromPoints(pointsY);
-
-      scene.add(new THREE.Line(geometryY, axisMaterial));
-      // วาดวงกลม (จาก drawData)
-      drawData.forEach((item) => {
-        if (item.type === "circle") {
-          if (item.points && item.points.length > 0) {
-            item.points.forEach(([x, y]) => {
-              const geometry = new THREE.CircleGeometry(1, 8);
-              const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-              const mesh = new THREE.Mesh(geometry, material);
-
-              mesh.position.set(x, y, 0);
-              scene.add(mesh);
-            });
-          }
-        }
-        //วาดวงรี
-        if (item.type === "ellipse") {
-          if (item.points && item.points.length > 0) {
-            item.points.forEach(([x, y]) => {
-              const geometry = new THREE.CircleGeometry(1, 8);
-              const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-              const mesh = new THREE.Mesh(geometry, material);
-
-              mesh.position.set(x, y, 0);
-              scene.add(mesh);
-            });
-          }
-        }
-
-        // วาดเส้น (line)
-        if (item.type === "line") {
-          if (item.points && item.points.length > 0) {
-            item.points.forEach(([x, y]) => {
-              const geometry = new THREE.CircleGeometry(1, 8);
-              const material = new THREE.MeshBasicMaterial({ color: 0xff00ff }); // ชมพู
-              const mesh = new THREE.Mesh(geometry, material);
-
-              mesh.position.set(x, y, 0);
-              scene.add(mesh);
-            });
-          }
-        }
-      });
-      // ✅ render หลังวาดครบทั้งหมด
-      renderer.render(scene, camera);
+      renderCanvas(mountRef.current, updatedFrame, drawData);
     }
   };
 
