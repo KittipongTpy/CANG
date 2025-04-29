@@ -13,38 +13,31 @@ export default function FrameComponent({ x, y, bgColor, drawData }: FrameProps) 
 
     useEffect(() => {
         const canvas = canvasRef.current;
-
         if (!canvas) return;
         canvas.width = x;
         canvas.height = y;
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
-
         // Set the background color
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        console.log(executeCommand(drawData));
-        const pixelList = executeCommand(drawData);
-        pixelList.drawData.forEach((item) => {
-
-            item.points?.forEach(([x, y]) => {
-                ctx.fillStyle = "black";
+        const result = executeCommand(drawData);
+        console.log(result);
+        result.drawData.forEach((item) => {
+            const shapeColor = item.color || "black";
+            item.points?.forEach(([px, py]) => {
+                ctx.fillStyle = shapeColor;
                 ctx.beginPath();
-                ctx.fillRect(x, y, 1, 1);
+                ctx.fillRect(px, py, 1, 1);
                 ctx.fill();
-            })
-
+            });
         });
-
-    }, [x, y]);
-    const width = x;
-    const height = y;
-
+    }, [x, y, bgColor, drawData]);
     return (
         <div
             style={{
-                aspectRatio: `${width} / ${height}`, // maintain ratio only
+                aspectRatio: `${x} / ${y}`,
             }}
         >
             <canvas
