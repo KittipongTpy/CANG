@@ -3,7 +3,7 @@ import Splitter, { SplitDirection } from "@devbookhq/splitter";
 import {
   ScrollShadow,
   Card,
-  CardHeader,
+  CardHeader, 
   CardBody,
   CardFooter,
   Button,
@@ -94,6 +94,19 @@ export default function App() {
             item.points.forEach(([x, y]) => {
               const geometry = new THREE.CircleGeometry(1, 8);
               const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+              const mesh = new THREE.Mesh(geometry, material);
+              mesh.position.set(x, y, 0);
+              scene.add(mesh);
+            });
+          }
+        }
+
+        // วาดเส้น (line)
+        if (item.type === "line") {
+          if (item.points && item.points.length > 0) {
+            item.points.forEach(([x, y]) => {
+              const geometry = new THREE.CircleGeometry(1, 8);
+              const material = new THREE.MeshBasicMaterial({ color: 0xff00ff }); // ชมพู
               const mesh = new THREE.Mesh(geometry, material);
               mesh.position.set(x, y, 0);
               scene.add(mesh);
