@@ -1,72 +1,77 @@
-export function ellipse(command: string): string | { type: "ellipse"; points: [number, number][] } | null {
-    const parts = command.trim().split(/\s+/);
-    if (parts.length !== 5 || parts[0].toUpperCase() !== "ELI") {
-      return "Syntax error: Use ELI <cx> <cy> <rx> <ry>";
-    }
-  
-    const [, cxStr, cyStr, rxStr, ryStr] = parts;
-    const cx = parseInt(cxStr, 10);
-    const cy = parseInt(cyStr, 10);
-    const rx = parseInt(rxStr, 10);
-    const ry = parseInt(ryStr, 10);
-  
-    if ([cx, cy, rx, ry].some(v => isNaN(v))) {
-      return "Syntax error: cx, cy, rx, ry must be numbers.";
-    }
-    if (rx <= 0 || ry <= 0) {
-      return "Syntax error: rx and ry must be positive.";
-    }
-  
-    const points: [number, number][] = [];
-  
-    let x = 0;
-    let y = ry;
-  
-    let rx2 = rx * rx;
-    let ry2 = ry * ry;
-    let tworx2 = 2 * rx2;
-    let twory2 = 2 * ry2;
-    let px = 0;
-    let py = tworx2 * y;
-  
-    // Region 1
-    let p = Math.round(ry2 - (rx2 * ry) + (0.25 * rx2));
-    while (px < py) {
-      points.push([ cx + x, cy + y ]);
-      points.push([ cx - x, cy + y ]);
-      points.push([ cx + x, cy - y ]);
-      points.push([ cx - x, cy - y ]);
-  
-      x++;
-      px += twory2;
-      if (p < 0) {
-        p += ry2 + px;
-      } else {
-        y--;
-        py -= tworx2;
-        p += ry2 + px - py;
-      }
-    }
-  
-    // Region 2
-    p = Math.round(ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y - 1) * (y - 1) - rx2 * ry2);
-    while (y >= 0) {
-      points.push([ cx + x, cy + y ]);
-      points.push([ cx - x, cy + y ]);
-      points.push([ cx + x, cy - y ]);
-      points.push([ cx - x, cy - y ]);
-  
+export function ellipse(
+  command: string,
+): string | { type: "ellipse"; points: [number, number][] } | null {
+  const parts = command.trim().split(/\s+/);
+
+  if (parts.length !== 5 || parts[0].toUpperCase() !== "ELI") {
+    return "Syntax error: Use ELI <cx> <cy> <rx> <ry>";
+  }
+
+  const [, cxStr, cyStr, rxStr, ryStr] = parts;
+  const cx = parseInt(cxStr, 10);
+  const cy = parseInt(cyStr, 10);
+  const rx = parseInt(rxStr, 10);
+  const ry = parseInt(ryStr, 10);
+
+  if ([cx, cy, rx, ry].some((v) => isNaN(v))) {
+    return "Syntax error: cx, cy, rx, ry must be numbers.";
+  }
+  if (rx <= 0 || ry <= 0) {
+    return "Syntax error: rx and ry must be positive.";
+  }
+
+  const points: [number, number][] = [];
+
+  let x = 0;
+  let y = ry;
+
+  let rx2 = rx * rx;
+  let ry2 = ry * ry;
+  let tworx2 = 2 * rx2;
+  let twory2 = 2 * ry2;
+  let px = 0;
+  let py = tworx2 * y;
+
+  // Region 1
+  let p = Math.round(ry2 - rx2 * ry + 0.25 * rx2);
+
+  while (px < py) {
+    points.push([cx + x, cy + y]);
+    points.push([cx - x, cy + y]);
+    points.push([cx + x, cy - y]);
+    points.push([cx - x, cy - y]);
+
+    x++;
+    px += twory2;
+    if (p < 0) {
+      p += ry2 + px;
+    } else {
       y--;
       py -= tworx2;
-      if (p > 0) {
-        p += rx2 - py;
-      } else {
-        x++;
-        px += twory2;
-        p += rx2 - py + px;
-      }
+      p += ry2 + px - py;
     }
-  
-    return { type: "ellipse", points };
   }
-  
+
+  // Region 2
+  p = Math.round(
+    ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y - 1) * (y - 1) - rx2 * ry2,
+  );
+  while (y >= 0) {
+    points.push([cx + x, cy + y]);
+    points.push([cx - x, cy + y]);
+    points.push([cx + x, cy - y]);
+    points.push([cx - x, cy - y]);
+
+    y--;
+    py -= tworx2;
+    if (p > 0) {
+      p += rx2 - py;
+    } else {
+      x++;
+      px += twory2;
+      p += rx2 - py + px;
+    }
+  }
+
+  return { type: "ellipse", points };
+}
