@@ -3,13 +3,13 @@ type Frame = {
   height: number;
 };
 
-let currentFrame: Frame | null = null; // Store the current frame configuration
+let currentFrame: Frame | String; // Store the current frame configuration
 
 /**
  * Initializes a frame with the given dimensions.
  * @param command - The command string in the format "INIT <width> <height>"
  */
-export function init(command: string): string | null {
+export function init(command: string): string | Frame {
   const parts = command.trim().split(/\s+/);
 
   if (parts.length !== 3 || parts[0].toUpperCase() !== "INIT") {
@@ -28,15 +28,15 @@ export function init(command: string): string | null {
   }
 
   currentFrame = { width, height };
-  console.log("Frame initialized:", currentFrame);
+  // console.log("Frame initialized:", currentFrame);
 
-  return null;
+  return currentFrame
 }
 
-/**
- * Gets the current frame configuration.
- * @returns The current frame or null if not initialized.
- */
-export function getCurrentFrame(): Frame | null {
-  return currentFrame;
-}
+// /**
+//  * Gets the current frame configuration.
+//  * @returns The current frame or null if not initialized.
+//  */
+// export function getCurrentFrame(): Frame | null {
+//   return currentFrame;
+// }

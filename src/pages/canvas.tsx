@@ -15,6 +15,7 @@ import CodeMirror from "@uiw/react-codemirror";
 
 import folder from "../image/folder.png";
 import FrameComponent from "@/shapes/frame";
+import { init } from "@/shapes/init";
 
 
 import DefaultLayout from "@/layouts/default";
@@ -34,15 +35,28 @@ export default function App() {
       return;
     }
 
-    const initFrame = code.trim().split(/\n/)[0].split(/\s+/);
-    if (initFrame.length !== 3 || initFrame[0].toUpperCase() !== "INIT") {
-      console.log(initFrame.length);
-      setErrorMessage("Syntax error: Use INIT <width> <height>");
+    const initFrame = init(code.trim().split(/\n/)[0]);
+    if (initFrame === null) {
+      setErrorMessage("Frame not initialized.");
+      return;
+    }
+    if (typeof initFrame === "string") {
+      setErrorMessage(initFrame);
       return;
     } else {
-      setFrame({ x: parseInt(initFrame[1]), y: parseInt(initFrame[2]) });
+      setFrame({ x: initFrame.width, y: initFrame.height });
       setCodeCommand(code.trim().split(/\n/).slice(1).join("\n"));
-    }
+    };
+
+    // const initFrame = code.trim().split(/\n/)[0].split(/\s+/);
+    // if (initFrame.length !== 3 || initFrame[0].toUpperCase() !== "INIT") {
+    //   console.log(initFrame.length);
+    //   setErrorMessage("Syntax error: Use INIT <width> <height>");
+    //   return;
+    // } else {
+    //   setFrame({ x: parseInt(initFrame[1]), y: parseInt(initFrame[2]) });
+    //   setCodeCommand(code.trim().split(/\n/).slice(1).join("\n"));
+    // }
   };
 
   return (

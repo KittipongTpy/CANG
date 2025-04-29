@@ -1,4 +1,3 @@
-import { init } from "../shapes/init";
 import { circle } from "../shapes/circle";
 import { ellipse } from "../shapes/ellipse";
 import { line } from "../shapes/line";
@@ -12,7 +11,6 @@ const commandRegistry: Record<
   string,
   (command: string) => string | null | DrawData
 > = {
-  INIT: init,
   CIR: circle,
   ELI: ellipse,
   LIN: line,
