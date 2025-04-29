@@ -47,16 +47,6 @@ export default function App() {
       setFrame({ x: initFrame.width, y: initFrame.height });
       setCodeCommand(code.trim().split(/\n/).slice(1).join("\n"));
     };
-
-    // const initFrame = code.trim().split(/\n/)[0].split(/\s+/);
-    // if (initFrame.length !== 3 || initFrame[0].toUpperCase() !== "INIT") {
-    //   console.log(initFrame.length);
-    //   setErrorMessage("Syntax error: Use INIT <width> <height>");
-    //   return;
-    // } else {
-    //   setFrame({ x: parseInt(initFrame[1]), y: parseInt(initFrame[2]) });
-    //   setCodeCommand(code.trim().split(/\n/).slice(1).join("\n"));
-    // }
   };
 
   return (
@@ -82,14 +72,14 @@ export default function App() {
                       x={frame.x}
                       y={frame.y}
                       bgColor="#FFFFFF"
-                      drawData={code}
+                      drawData={codeCommand}
                     />
                   )}
-                  {/* {!frame && (
-                  <p className="text-center text-gray-500">
-                    No frame initialized.
-                  </p>
-                )} */}
+                  {!frame && (
+                    <p className="text-center text-gray-500">
+                      No frame initialized.
+                    </p>
+                  )}
 
                 </div>
 

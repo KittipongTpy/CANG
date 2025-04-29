@@ -1,4 +1,6 @@
+import { exec } from "child_process";
 import { useEffect, useRef } from "react";
+import { executeCommand } from "../command/render";
 interface FrameProps {
     x: number;
     y: number;
@@ -22,20 +24,19 @@ export default function FrameComponent({ x, y, bgColor, drawData }: FrameProps) 
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // ctx.fillStyle = "#FF0000";
-        // ctx.fillRect(0, 0, 3, 3);
+        console.log(executeCommand(drawData));
+        const pixelList = executeCommand(drawData);
+        pixelList.drawData.forEach((item) => {
 
-        // Draw the frame
-        // ctx.clearRect(x, y, width, height);
-        // ctx.strokeStyle = "black";
-        // ctx.strokeRect(x, y, width, height);
+            item.points?.forEach(([x, y]) => {
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.fillRect(x, y, 1, 1);
+                ctx.fill();
+            })
 
+        });
 
-        // Clear the canvas
-        // ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw the frame
-        // ctx.strokeRect(x, y, width, height);
     }, [x, y]);
     const width = x;
     const height = y;

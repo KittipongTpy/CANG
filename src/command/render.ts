@@ -1,77 +1,46 @@
-import * as THREE from "three";
-import type { DrawData } from "../command/index";
+import { circle } from "../shapes/circle";
+import { ellipse } from "../shapes/ellipse";
+import { line } from "../shapes/line";
 
-export function renderCanvas(
-  mountElement: HTMLElement,
-  frame: { width: number; height: number },
-  drawData: DrawData[]
-): void {
-  const scene = new THREE.Scene();
+export type DrawData =
+  | { type: "circle"; points: [number, number][] }
+  | { type: "ellipse"; points: [number, number][] }
+  | { type: "line"; points: [number, number][] };
 
-  const camera = new THREE.OrthographicCamera(
-    -frame.width / 2,
-    frame.width / 2,
-    frame.height / 2,
-    -frame.height / 2,
-    1,
-    1000
-  );
+const commandRegistry: Record<
+  string,
+  (command: string) => string | null | DrawData
+> = {
+  CIR: circle,
+  ELI: ellipse,
+  LIN: line,
+};
 
-  camera.position.z = 10;
-  const renderer = new THREE.WebGLRenderer({ alpha: true });
-  renderer.setSize(frame.width, frame.height);
+export function executeCommand(input: string): {
+  errors: string[];
+  drawData: DrawData[];
+} {
+  const errors: string[] = [];
+  const drawData: DrawData[] = [];
+  const commands = input.trim().split(/\r?\n/);
 
-  mountElement.innerHTML = ""; // ล้าง div เดิม
-  mountElement.appendChild(renderer.domElement); // ใส่ WebGL Canvas ใหม่
+  for (const line of commands) {
+    const [commandName] = line.trim().split(/\s+/);
+    const command = commandName.toUpperCase();
 
-  // วาดแกน X และ Y
-  const axisMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    const handler = commandRegistry[command];
 
-  // แกน X (แนวนอน)
-  const pointsX = [
-    new THREE.Vector3(-frame.width / 2, 0, 0),
-    new THREE.Vector3(frame.width / 2, 0, 0),
-  ];
-  const geometryX = new THREE.BufferGeometry().setFromPoints(pointsX);
-  scene.add(new THREE.Line(geometryX, axisMaterial));
-
-  // แกน Y (แนวตั้ง)
-  const pointsY = [
-    new THREE.Vector3(0, -frame.height / 2, 0),
-    new THREE.Vector3(0, frame.height / 2, 0),
-  ];
-  const geometryY = new THREE.BufferGeometry().setFromPoints(pointsY);
-  scene.add(new THREE.Line(geometryY, axisMaterial));
-
-  // วาดรูปทรงจาก drawData
-  drawData.forEach((item) => {
-    if (item.type === "circle") {
-      item.points?.forEach(([x, y]) => {
-        const geometry = new THREE.CircleGeometry(1, 8);
-        const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(x, y, 0);
-        scene.add(mesh);
-      });
-    } else if (item.type === "ellipse") {
-      item.points?.forEach(([x, y]) => {
-        const geometry = new THREE.CircleGeometry(1, 8);
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(x, y, 0);
-        scene.add(mesh);
-      });
-    } else if (item.type === "line") {
-      item.points?.forEach(([x, y]) => {
-        const geometry = new THREE.CircleGeometry(1, 8);
-        const material = new THREE.MeshBasicMaterial({ color: 0xff00ff });
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(x, y, 0);
-        scene.add(mesh);
-      });
+    if (!handler) {
+      errors.push(`Unknown command: ${command}`);
+    } else {
+      const result = handler(line);
+      if (typeof result === "string") {
+        errors.push(result);
+      } else if (result) {
+        drawData.push(result);
+      }
     }
-  });
+  }
 
-  // render หลังวาดครบหมด
-  renderer.render(scene, camera);
+  return { errors, drawData };
 }
