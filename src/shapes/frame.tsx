@@ -69,7 +69,7 @@ export default function FrameComponent({
         ctx.fillStyle = shapeColor;
         ctx.fill();
         if (strokeWidth > 1) {
-          ctx.strokeStyle = shapeColor;
+          ctx.strokeStyle = "black";
           ctx.lineWidth = strokeWidth;
           ctx.stroke();
         }
