@@ -1,12 +1,11 @@
 export function circle(
   command: string,
-): string | { type: "circle"; points: [number, number][]; color?: string } | null {
+): string | { type: "circle"; points: [number, number][]; color?: string ; strokeWidth? : number } | null {
   const parts = command.trim().split(/\s+/);
 
-  if (parts.length !== 4 && parts.length !== 6) {
-    return "Syntax error: Use CIR <cx> <cy> <radius> [FIL <color>]";
+  if (parts.length !== 4 && parts.length !== 6 && parts.length !== 8) {
+    return "Syntax error: Use CIR <cx> <cy> <radius> [FIL <color>] [BOR <strokeWidth>]";
   }
-
   if (parts[0].toUpperCase() !== "CIR") {
     return "Syntax error: Use CIR <cx> <cy> <radius> [FIL <color>]";
   }
@@ -46,13 +45,36 @@ export function circle(
     }
   }
 
+  
+  // Optional parsing
   let color: string | undefined;
+  let strokeWidth: number | undefined;
+
   if (parts.length === 6) {
-    if (parts[4].toUpperCase() !== "FIL") {
-      return "Syntax error: Expected FIL before color value.";
+    if (parts[4].toUpperCase() === "FIL") {
+      color = parts[5];
+    } else if (parts[4].toUpperCase() === "BOR") {
+      const width = parseFloat(parts[5]);
+      if (isNaN(width)) {
+        return "Syntax error: strokeWidth must be a number.";
+      }
+      strokeWidth = width;
+    } else {
+      return "Syntax error: Expected FIL or BOR at position 5.";
+    }
+  } else if (parts.length === 8) {
+    if (parts[4].toUpperCase() !== "FIL" || parts[6].toUpperCase() !== "BOR") {
+      return "Syntax error: Expected 'FIL <color> BOR <width>' in that order.";
     }
     color = parts[5];
+    const width = parseFloat(parts[7]);
+    if (isNaN(width)) {
+      return "Syntax error: strokeWidth must be a number.";
+    }
+    strokeWidth = width;
   }
 
-  return { type: "circle", points, color };
+
+
+  return { type: "circle", points, color ,strokeWidth};
 }

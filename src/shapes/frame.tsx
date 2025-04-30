@@ -33,13 +33,18 @@ export default function FrameComponent({
     console.log(result);
     result.drawData.forEach((item) => {
       const shapeColor = item.color || "black";
+      const strokeWidth = item.strokeWidth || 1;
+
 
       if (item.type === "line") {
         item.points.forEach(([px, py]) => {
           ctx.fillStyle = shapeColor;
           ctx.beginPath();
-          ctx.fillRect(px, py, 1, 1);
+          ctx.fillRect(px, py, strokeWidth, strokeWidth);
           ctx.fill();
+          ctx.strokeStyle = shapeColor; 
+          ctx.lineWidth = strokeWidth; 
+          ctx.strokeRect(px, py, strokeWidth, strokeWidth);
         });
       } else {
         const pts = item.points.slice();
@@ -61,6 +66,9 @@ export default function FrameComponent({
         ctx.closePath();
         ctx.fillStyle = shapeColor;
         ctx.fill();
+        ctx.strokeStyle = "black"; // หรือใช้ strokeColor แยก
+        ctx.lineWidth = strokeWidth || 1;
+        ctx.stroke();
       }
     });
   }, [x, y, bgColor, drawData]);
