@@ -42,9 +42,11 @@ export default function FrameComponent({
           ctx.beginPath();
           ctx.fillRect(px, py, strokeWidth, strokeWidth);
           ctx.fill();
+          if (strokeWidth > 1) {  
           ctx.strokeStyle = shapeColor; 
           ctx.lineWidth = strokeWidth; 
           ctx.strokeRect(px, py, strokeWidth, strokeWidth);
+          }
         });
       } else {
         const pts = item.points.slice();
@@ -66,9 +68,11 @@ export default function FrameComponent({
         ctx.closePath();
         ctx.fillStyle = shapeColor;
         ctx.fill();
-        ctx.strokeStyle = "black"; // หรือใช้ strokeColor แยก
-        ctx.lineWidth = strokeWidth || 1;
-        ctx.stroke();
+        if (strokeWidth > 1) {
+          ctx.strokeStyle = shapeColor;
+          ctx.lineWidth = strokeWidth;
+          ctx.stroke();
+        }
       }
     });
   }, [x, y, bgColor, drawData]);
