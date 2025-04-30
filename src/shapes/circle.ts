@@ -4,7 +4,7 @@ export function circle(
   const parts = command.trim().split(/\s+/);
 
   if (parts.length !== 4 && parts.length !== 6 && parts.length !== 8) {
-    return "Syntax error: Use CIR <cx> <cy> <radius> [FIL <color>] [BOR <strokeWidth>]";
+    return "Syntax error: Use CIR <cx> <cy> <radius>";
   }
   if (parts[0].toUpperCase() !== "CIR") {
     return "Syntax error: Use CIR <cx> <cy> <radius> [FIL <color>]";
