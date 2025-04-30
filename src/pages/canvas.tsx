@@ -48,6 +48,11 @@ export default function App() {
     }
     const restCommand = lines.slice(1).join("\n");
     const { errors } = executeCommand(restCommand);
+    console.log("error:", errors);
+
+    if (errors.length > 0 && errors[0] !== " ") {
+      setErrorMessage(errors.join(", "));
+    }
 
     setFrame({ x: initFrame.width, y: initFrame.height });
     setCodeCommand(restCommand);
@@ -55,7 +60,7 @@ export default function App() {
 
   useEffect(() => {
     setErrorMessage(null); // Reset error message
-  }, [code])
+  }, [code]);
 
   return (
     <DefaultLayout>
