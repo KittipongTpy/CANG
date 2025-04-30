@@ -49,11 +49,6 @@ export default function App() {
     const restCommand = lines.slice(1).join("\n");
     const { errors } = executeCommand(restCommand);
 
-    if (errors.length > 0) {
-      setErrorMessage(errors.join("\n"));
-
-      return;
-    }
     setFrame({ x: initFrame.width, y: initFrame.height });
     setCodeCommand(restCommand);
   };
