@@ -9,22 +9,20 @@ import {
   Tabs,
   Tab,
 } from "@heroui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import CodeMirror from "@uiw/react-codemirror";
 
 import folder from "../image/folder.png";
+
 import FrameComponent from "@/shapes/frame";
 import { init } from "@/shapes/init";
-
-
 import DefaultLayout from "@/layouts/default";
+import { executeCommand } from "@/command/render";
 
 export default function App() {
   const [code, setCode] = useState<string>("");
-  const [frame, setFrame] = useState<{ x: number; y: number } | null>(
-    null
-  );
+  const [frame, setFrame] = useState<{ x: number; y: number } | null>(null);
   const [codeCommand, setCodeCommand] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -32,22 +30,37 @@ export default function App() {
     setErrorMessage(null); // Reset error message
     if (!code.trim()) {
       setErrorMessage("No command provided.");
+
       return;
     }
+    const lines = code.trim().split(/\n/);
+    const initFrame = init(lines[0]);
 
-    const initFrame = init(code.trim().split(/\n/)[0]);
     if (initFrame === null) {
       setErrorMessage("Frame not initialized.");
+
       return;
     }
     if (typeof initFrame === "string") {
       setErrorMessage(initFrame);
+
       return;
-    } else {
-      setFrame({ x: initFrame.width, y: initFrame.height });
-      setCodeCommand(code.trim().split(/\n/).slice(1).join("\n"));
-    };
+    }
+    const restCommand = lines.slice(1).join("\n");
+    const { errors } = executeCommand(restCommand);
+
+    if (errors.length > 0) {
+      setErrorMessage(errors.join("\n"));
+
+      return;
+    }
+    setFrame({ x: initFrame.width, y: initFrame.height });
+    setCodeCommand(restCommand);
   };
+
+  useEffect(() => {
+    setErrorMessage(null); // Reset error message
+  }, [code])
 
   return (
     <DefaultLayout>
@@ -69,10 +82,10 @@ export default function App() {
                 <div className="items-center justify-center h-full">
                   {frame && (
                     <FrameComponent
-                      x={frame.x}
-                      y={frame.y}
                       bgColor="#FFFFFF"
                       drawData={codeCommand}
+                      x={frame.x}
+                      y={frame.y}
                     />
                   )}
                   {!frame && (
@@ -80,9 +93,7 @@ export default function App() {
                       No frame initialized.
                     </p>
                   )}
-
                 </div>
-
               </ScrollShadow>
             </CardBody>
           </Card>
@@ -111,14 +122,14 @@ export default function App() {
                 <CardFooter className="bg-white/10 bottom-0 border-t-10 flex justify-between">
                   <pre>
                     {errorMessage && (
-                      <p className="px-4 py-2 text-red-500 font-semibold text-sm">
+                      <p className="px-4 py-2 text-red-500 font-semibold text-sm flex">
                         {errorMessage}
                       </p>
                     )}
                   </pre>
                   <div>
                     <Button
-                      className="text-sm px-8 py-2 font-semibold text-white bg-pink-500 hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-300 rounded-full shadow-md transition-all duration-300"
+                      className="flex text-sm px-8 py-2 font-semibold text-white bg-pink-500 hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-300 rounded-full shadow-md transition-all duration-300"
                       onPress={handleRun}
                     >
                       Run

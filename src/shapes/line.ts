@@ -4,7 +4,7 @@ export function line(
   const parts = command.trim().split(/\s+/);
 
   if (parts.length !== 5 && parts.length !== 7 && parts.length !== 9) {
-    return "Syntax error: Use LIN <x1> <y1> <x2> <y2> [FIL <color>] [BOR <strokeWidth>]";
+    return "Syntax error: Use LIN <x1> <y1> <x2> <y2>";
   }
 
   if (parts[0].toUpperCase() !== "LIN") {
