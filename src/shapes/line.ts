@@ -1,10 +1,10 @@
 export function line(
   command: string,
-): string | { type: "line"; points: [number, number][]; color?: string } | null {
+): string | { type: "line"; points: [number, number][]; color?: string ; strokeWidth?: number} | null {
   const parts = command.trim().split(/\s+/);
 
-  if (parts.length !== 5 && parts.length !== 7) {
-    return "Syntax error: Use LIN <x1> <y1> <x2> <y2> [FIL <color>]";
+  if (parts.length !== 5 && parts.length !== 7 && parts.length !== 9) {
+    return "Syntax error: Use LIN <x1> <y1> <x2> <y2> [FIL <color>] [BOR <strokeWidth>]";
   }
 
   if (parts[0].toUpperCase() !== "LIN") {
@@ -43,13 +43,37 @@ export function line(
     }
   }
 
-  let color: string | undefined;
-  if (parts.length === 7) {
-    if (parts[5].toUpperCase() !== "FIL") {
-      return "Syntax error: Expected FIL before color value.";
-    }
-    color = parts[6];
-  }
+let color: string | undefined;
+let strokeWidth: number | undefined;
 
-  return { type: "line", points, color };
+if (parts.length === 5) {
+  // ไม่มี FIL หรือ STR (ถูกต้อง)
+} else if (parts.length === 7) {
+  if (parts[5].toUpperCase() === "FIL") {
+    color = parts[6];
+  } else if (parts[5].toUpperCase() === "BOR") {
+    const width = parseFloat(parts[6]);
+    if (isNaN(width)) {
+      return "Syntax error: strokeWidth must be a number.";
+    }
+    strokeWidth = width;
+  } else {
+    return "Syntax error: Expected FIL or BOR at position 6.";
+  }
+} else if (parts.length === 9) {
+  if (parts[5].toUpperCase() !== "FIL" || parts[7].toUpperCase() !== "BOR") {
+    return "Syntax error: Expected 'FIL <color> BOR <width>' in that exact order.";
+  }
+  color = parts[6];
+  const width = parseFloat(parts[8]);
+  if (isNaN(width)) {
+    return "Syntax error: strokeWidth must be a number.";
+  }
+  strokeWidth = width;
+} else {
+  return "Syntax error: Invalid number of arguments.";
+}
+
+ 
+  return { type: "line", points, color , strokeWidth };
 }

@@ -3,9 +3,9 @@ import { ellipse } from "../shapes/ellipse";
 import { line } from "../shapes/line";
 
 export type DrawData =
-  | { type: "circle"; points: [number, number][]; color?: string }
-  | { type: "ellipse"; points: [number, number][]; color?: string }
-  | { type: "line"; points: [number, number][]; color?: string };
+  | { type: "circle"; points: [number, number][]; color?: string ; strokeWidth?: number }
+  | { type: "ellipse"; points: [number, number][]; color?: string ; strokeWidth?: number }
+  | { type: "line"; points: [number, number][]; color?: string ; strokeWidth?: number };
 
 const commandRegistry: Record<
   string,
