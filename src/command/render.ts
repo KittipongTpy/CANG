@@ -1,11 +1,13 @@
 import { circle } from "../shapes/circle";
 import { ellipse } from "../shapes/ellipse";
 import { line } from "../shapes/line";
+import { hermite } from "../shapes/hermite"; // ...existing code...
 
 export type DrawData =
   | { type: "circle"; points: [number, number][]; color?: string ; strokeWidth?: number }
   | { type: "ellipse"; points: [number, number][]; color?: string ; strokeWidth?: number }
-  | { type: "line"; points: [number, number][]; color?: string ; strokeWidth?: number };
+  | { type: "line"; points: [number, number][]; color?: string ; strokeWidth?: number }
+  | { type: "hermite"; points: [number, number][]; color?: string; strokeWidth?: number };
 
 const commandRegistry: Record<
   string,
@@ -14,6 +16,7 @@ const commandRegistry: Record<
   CIR: circle,
   ELI: ellipse,
   LIN: line,
+  HER: hermite,
 };
 
 export function executeCommand(input: string): {
