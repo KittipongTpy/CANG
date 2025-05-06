@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { executeCommand } from "../command/render";
 interface FrameProps {
@@ -6,6 +6,10 @@ interface FrameProps {
   y: number;
   bgColor: string;
   drawData: string;
+  grid: boolean;
+  setMousePos?: (pos: { x: number; y: number }) => void;
+  mousePos?: { x: number; y: number };
+  shape?: "mouse" | "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
 }
 
 export default function FrameComponent({
@@ -13,12 +17,47 @@ export default function FrameComponent({
   y,
   bgColor,
   drawData,
+  grid,
+  setMousePos,
+  mousePos,
+  shape
 }: FrameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const [mouseList, setMouseList] = useState<{ x: number; y: number }[]>([]);
+  const [clickedPos, setClickedPos] = useState<{ x: number; y: number }[]>([]);
+
+  const shapeRequiredLengths: Record<string, number> = {
+    mouse: 1,
+    line: 2,
+    rectangle: 2,
+    circle: 2,
+    ellipse: 2,
+    hermite: 4,
+    bezier: 4,
+  };
+
+  useEffect(() => {
+    if (!shape) return;
+    setMouseList([]);
+
+    const requiredLength = shapeRequiredLengths[shape] || 0;
+    console.log("requiredLength", requiredLength);
+
+  }, [shape]);
+  const handleMouseClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = ((e.clientX - rect.left) / rect.width) * x;
+    const mouseY = ((e.clientY - rect.top) / rect.height) * y;
+
+    setClickedPos((prev) => [...prev, { x: mouseX, y: mouseY }]);
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
-
     if (!canvas) return;
     canvas.width = x;
     canvas.height = y;
@@ -42,10 +81,10 @@ export default function FrameComponent({
           ctx.beginPath();
           ctx.fillRect(px, py, strokeWidth, strokeWidth);
           ctx.fill();
-          if (strokeWidth > 1) {  
-          ctx.strokeStyle = shapeColor; 
-          ctx.lineWidth = strokeWidth; 
-          ctx.strokeRect(px, py, strokeWidth, strokeWidth);
+          if (strokeWidth > 1) {
+            ctx.strokeStyle = shapeColor;
+            ctx.lineWidth = strokeWidth;
+            ctx.strokeRect(px, py, strokeWidth, strokeWidth);
           }
         });
       } else {
@@ -76,21 +115,60 @@ export default function FrameComponent({
       }
     });
   }, [x, y, bgColor, drawData]);
+  useEffect(() => {
+    if (mousePos) {
+      setMousePos?.(mousePos);
+    }
+  }, [mousePos]);
 
   return (
-    <div
-      style={{
-        aspectRatio: `${x} / ${y}`,
-      }}
-    >
-      <canvas
-        ref={canvasRef}
+    <div>
+      <ul>
+        {mouseList.map((pos, index) => (
+          <li key={index}>
+            ({pos.x.toFixed(2)}, {pos.y.toFixed(2)})
+          </li>
+        ))}
+      </ul>
+      <div
         style={{
-          width: "100%",
-          height: "100%",
-          imageRendering: "pixelated",
+          aspectRatio: `${x} / ${y}`,
+          position: "relative",
         }}
-      />
+        onMouseMove={(e) => {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = ((e.clientX - rect.left) / rect.width) * x;
+          const mouseY = ((e.clientY - rect.top) / rect.height) * y;
+
+          setMousePos?.({ x: mouseX, y: mouseY });
+        }}
+      >
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundColor: bgColor,
+          }}
+        />
+        {grid && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none",
+              backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px)`,
+              backgroundSize: `${Math.min(x, y) / 5}px ${Math.min(x, y) / 5}px`,
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }

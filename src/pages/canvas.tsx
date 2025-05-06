@@ -8,11 +8,19 @@ import {
   Button,
   Tabs,
   Tab,
+  ButtonGroup,
+  Input,
+  Switch,
+  Kbd
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import CodeMirror from "@uiw/react-codemirror";
-
+import { FaRegCircle } from "react-icons/fa";
+import { TfiLayoutLineSolid } from "react-icons/tfi";
+import { MdOutlineRectangle } from "react-icons/md";
+import { PiBezierCurve } from "react-icons/pi";
+import { FaMousePointer } from "react-icons/fa";
 import folder from "../image/folder.png";
 
 import FrameComponent from "@/shapes/frame";
@@ -25,12 +33,16 @@ export default function App() {
   const [frame, setFrame] = useState<{ x: number; y: number } | null>(null);
   const [codeCommand, setCodeCommand] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [shape, setShape] = useState<"mouse" | "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite">("mouse");
+  const [fx, setFx] = useState<number>(100);
+  const [fy, setFy] = useState<number>(100);
+  const [grid, setGrid] = useState<boolean>(true);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const handleRun = () => {
     setErrorMessage(null); // Reset error message
     if (!code.trim()) {
       setErrorMessage("No command provided.");
-
       return;
     }
     const lines = code.trim().split(/\n/);
@@ -62,6 +74,11 @@ export default function App() {
     setErrorMessage(null); // Reset error message
   }, [code]);
 
+  useEffect(() => {
+    setFrame({ x: fx, y: fy });
+
+  }, [fx, fy]);
+
   return (
     <DefaultLayout>
       <Splitter
@@ -71,21 +88,67 @@ export default function App() {
         initialSizes={[60, 40]}
       >
         {/* ด้านซ้าย: Canvas */}
-        {/* ด้านซ้าย: Canvas */}
         <div className="h-full">
           <Card className="h-full">
             <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-              <h4 className="font-bold text-2xl p-5">CAD Canvas</h4>
+              <div className="space-y-2 mb-2">
+                <div className="flex space-x-2">
+                  <div className="flex items-center">
+                    X :
+                    <Input
+                      placeholder="xxxxx"
+                      className="w-[6ch] text-center"
+                      value={String(fx)}
+                      onChange={(e) => setFx(Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    Y :
+                    <Input
+                      placeholder="xxxxx"
+                      className="w-[6ch] text-center"
+                      value={String(fy)}
+                      onChange={(e) => setFy(Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    Grid :
+                    <Switch
+                      defaultSelected={grid}
+                      size="sm"
+                      onChange={(event) => setGrid(event.target.checked)}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    Position : <Kbd>{mousePos.x.toFixed(0)}, {mousePos.y.toFixed(0)}</Kbd>
+                  </div>
+                </div>
+                <ButtonGroup>
+                  <Button onPress={() => setShape("mouse")} isDisabled={shape === "mouse"}><FaMousePointer /></Button>
+                  <Button onPress={() => setShape("circle")} isDisabled={shape === "circle"}><FaRegCircle />Circle</Button>
+                  <Button onPress={() => setShape("line")} isDisabled={shape === "line"}><TfiLayoutLineSolid />Line</Button>
+                  <Button onPress={() => setShape("rectangle")} isDisabled={shape === "rectangle"}><MdOutlineRectangle />Rectangle</Button>
+                  <Button onPress={() => setShape("ellipse")} isDisabled={shape === "ellipse"}><FaRegCircle />Ellipse</Button>
+                  <Button onPress={() => setShape("bezier")} isDisabled={shape === "bezier"}><PiBezierCurve />Bezier</Button>
+                  <Button onPress={() => setShape("hermite")} isDisabled={shape === "hermite"}><PiBezierCurve />Hermite</Button>
+                </ButtonGroup>
+              </div>
             </CardHeader>
             <CardBody className="overflow-visible py-2 h-full">
               <ScrollShadow className="w-full h-full">
                 <div className="items-center justify-center h-full">
+
                   {frame && (
+
                     <FrameComponent
                       bgColor="#FFFFFF"
                       drawData={codeCommand}
                       x={frame.x}
                       y={frame.y}
+                      grid={grid}
+                      setMousePos={setMousePos}
+                      mousePos={mousePos}
+                      shape={shape}
                     />
                   )}
                   {!frame && (
@@ -100,10 +163,19 @@ export default function App() {
         </div>
 
         {/* ด้านขวา: Editor */}
-
-        {/* ด้านขวา: Editor */}
         <div className="h-full pb-8">
           <Tabs aria-label="Options">
+            <Tab key="Tools" className="h-full" title="Tools">
+              <Card className="pt-4 h-full">
+                <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+                </CardHeader>
+                <CardBody className="overflow-visible py-2 h-full">
+                </CardBody>
+                <CardFooter className="bg-white/10 bottom-0 border-t-10 flex justify-between">
+
+                </CardFooter>
+              </Card>
+            </Tab>
             <Tab key="Code" className="h-full" title="Code">
               <Card className="pt-4 h-full">
                 <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
