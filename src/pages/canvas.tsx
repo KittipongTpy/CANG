@@ -143,10 +143,19 @@ export default function App() {
               <Card>
                 <CardBody>
                   <ScrollShadow className="w-full h-[510px]">
-                    <p>
-                      {" "}
-                      {/* เอาไว้เพิ่มคู่มือ syntax เช่น INIT, CIR เป็นต้น */}{" "}
-                    </p>
+                  <div className="text-sm text-white font-mono space-y-2 leading-relaxed">
+                    <p><span className="font-bold text-gray-300">Starting frame size :</span></p>
+                    <p className="pl-4 text-gray-400">INIT &lt;width&gt; &lt;height&gt; <span className="text-gray-400">Ex. INIT 100 100</span></p>
+
+                    <p className="mt-3"><span className="font-bold text-gray-300">Shape drawing command :</span></p>
+                    <p className="pl-4 text-gray-400">LIN &lt;x1&gt; &lt;y1&gt; &lt;x2&gt; &lt;y2&gt; <span className="text-gray-400">Ex. LIN 1 1 5 6</span></p>
+                    <p className="pl-4 text-gray-400">CIR &lt;center x&gt; &lt;center y&gt; &lt;radius&gt; <span className="text-gray-400">Ex. CIR 50 50 10</span></p>
+                    <p className="pl-4 text-gray-400">ELI &lt;center x&gt; &lt;center y&gt; &lt;a&gt; &lt;b&gt; <span className="text-gray-400">Ex. ELI 30 30 10 20</span></p>
+
+                    <p className="mt-3"><span className="font-bold text-gray-300">Custom color and border :</span></p>
+                    <p className="pl-4 text-gray-400">FIL &lt;colorname&gt; <span className="text-gray-400">Ex. CIR 50 50 10 FIL red</span></p>
+                    <p className="pl-4 text-gray-400">BOR &lt;stroke width&gt; <span className="text-gray-400">Ex. CIR 50 50 10 BOR 4</span></p>
+                  </div>
                   </ScrollShadow>
                 </CardBody>
               </Card>
