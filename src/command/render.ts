@@ -2,12 +2,15 @@ import { circle } from "../shapes/circle";
 import { ellipse } from "../shapes/ellipse";
 import { line } from "../shapes/line";
 import { hermite } from "../shapes/hermite"; // ...existing code...
+import { bezier } from "../shapes/bezier";
 
 export type DrawData =
   | { type: "circle"; points: [number, number][]; color?: string ; strokeWidth?: number }
   | { type: "ellipse"; points: [number, number][]; color?: string ; strokeWidth?: number }
   | { type: "line"; points: [number, number][]; color?: string ; strokeWidth?: number }
-  | { type: "hermite"; points: [number, number][]; color?: string; strokeWidth?: number };
+  | { type: "hermite"; points: [number, number][]; color?: string; strokeWidth?: number }
+  | { type: "bezier"; points: [number, number][]; color?: string; strokeWidth?: number };
+
 
 const commandRegistry: Record<
   string,
@@ -17,6 +20,7 @@ const commandRegistry: Record<
   ELI: ellipse,
   LIN: line,
   HER: hermite,
+  BEZ: bezier,
 };
 
 export function executeCommand(input: string): {
