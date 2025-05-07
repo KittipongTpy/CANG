@@ -27,7 +27,15 @@ import FrameComponent from "@/shapes/frame";
 import { init } from "@/shapes/init";
 import DefaultLayout from "@/layouts/default";
 import { executeCommand } from "@/command/render";
-
+import ShapeCard from "@/components/shapeCard";
+import CustomShape from "@/components/customShape";
+interface Shape {
+  shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
+  controlPoints: { x: number; y: number }[];
+  color?: string;
+  isFilled?: boolean;
+  strokeWidth?: number;
+}
 export default function App() {
   const [code, setCode] = useState<string>("");
   const [frame, setFrame] = useState<{ x: number; y: number } | null>(null);
@@ -38,6 +46,8 @@ export default function App() {
   const [fy, setFy] = useState<number>(100);
   const [grid, setGrid] = useState<boolean>(true);
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [renderData, setRenderData] = useState<Shape[]>([]);
+  const [shapeId, setShapeId] = useState<number | null>(null);
 
   const handleRun = () => {
     setErrorMessage(null); // Reset error message
@@ -85,7 +95,7 @@ export default function App() {
         direction={SplitDirection.Horizontal}
         draggerClassName="custom-dragger-horizontal"
         gutterClassName="custom-gutter-horizontal"
-        initialSizes={[60, 40]}
+        initialSizes={[70, 30]}
       >
         {/* ด้านซ้าย: Canvas */}
         <div className="h-full">
@@ -122,6 +132,9 @@ export default function App() {
                   <div className="flex items-center">
                     Position : <Kbd>{mousePos.x.toFixed(0)}, {mousePos.y.toFixed(0)}</Kbd>
                   </div>
+                  <div className="flex items-center">
+                    <Button onPress={() => setRenderData((prev) => prev.slice(0, -1))}>Back</Button>
+                  </div>
                 </div>
                 <ButtonGroup>
                   <Button onPress={() => setShape("mouse")} isDisabled={shape === "mouse"}><FaMousePointer /></Button>
@@ -149,6 +162,9 @@ export default function App() {
                       setMousePos={setMousePos}
                       mousePos={mousePos}
                       shape={shape}
+                      renderData={renderData}
+                      setRenderData={setRenderData}
+
                     />
                   )}
                   {!frame && (
@@ -167,9 +183,26 @@ export default function App() {
           <Tabs aria-label="Options">
             <Tab key="Tools" className="h-full" title="Tools">
               <Card className="pt-4 h-full">
-                <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+                <CardHeader className="pb-0 pt-2 px-4 flex-col items-start w-full">
+                  {shapeId !== null && (
+                    <CustomShape
+                      renderData={renderData}
+                      setRenderData={setRenderData}
+                      id={shapeId}
+                    />
+                  )}
                 </CardHeader>
-                <CardBody className="overflow-visible py-2 h-full">
+                <CardBody className="overflow-visible py-2 h-full space-y-1">
+
+                  {renderData.map((shape, index) => (
+                    <ShapeCard key={index} {...shape}
+                      renderData={renderData}
+                      setRenderData={setRenderData}
+                      shape={shape}
+                      setShapeId={setShapeId}
+                      shapeId={shapeId}
+                    />
+                  ))}
                 </CardBody>
                 <CardFooter className="bg-white/10 bottom-0 border-t-10 flex justify-between">
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 import { executeCommand } from "../command/render";
+import { getPreRenderPoint } from "../preRender/preRender";
 interface FrameProps {
   x: number;
   y: number;
@@ -10,7 +11,23 @@ interface FrameProps {
   setMousePos?: (pos: { x: number; y: number }) => void;
   mousePos?: { x: number; y: number };
   shape?: "mouse" | "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
+  renderData: {
+    shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
+    controlPoints: { x: number; y: number }[];
+    color?: string;
+    isFilled?: boolean;
+    strokeWidth?: number;
+  }[];
+  setRenderData: React.Dispatch<React.SetStateAction<{
+    shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
+    controlPoints: { x: number; y: number }[];
+    color?: string;
+    isFilled?: boolean;
+    strokeWidth?: number;
+  }[]>>;
 }
+
+
 
 export default function FrameComponent({
   x,
@@ -19,13 +36,16 @@ export default function FrameComponent({
   drawData,
   grid,
   setMousePos,
-  mousePos,
-  shape
+  shape,
+  renderData,
+  setRenderData,
 }: FrameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [mouseList, setMouseList] = useState<{ x: number; y: number }[]>([]);
-  const [clickedPos, setClickedPos] = useState<{ x: number; y: number }[]>([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [rendering, setRendering] = useState<{ x: number; y: number }[]>([]);
+  const [mousePosHere, setMousePosHere] = useState<{ x: number; y: number } | null>(null);
 
   const shapeRequiredLengths: Record<string, number> = {
     mouse: 1,
@@ -37,24 +57,58 @@ export default function FrameComponent({
     bezier: 4,
   };
 
+  const setRenderDataFunc = () => {
+    setRenderData((prevRenderData) => [
+      ...prevRenderData,
+      {
+        shape: shape as "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite",
+        controlPoints: mouseList,
+        color: "#808080",
+        isFilled: false,
+        strokeWidth: 1,
+      },
+    ]);
+  }
+
   useEffect(() => {
     if (!shape) return;
-    setMouseList([]);
-
     const requiredLength = shapeRequiredLengths[shape] || 0;
-    console.log("requiredLength", requiredLength);
+    if (mouseList.length >= requiredLength) {
+      setRenderDataFunc();
+      setMouseList([]);
+    }
+  }, [shape, mouseList]);
 
-  }, [shape]);
-  const handleMouseClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const handleMouseClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const mouseX = ((e.clientX - rect.left) / rect.width) * x;
-    const mouseY = ((e.clientY - rect.top) / rect.height) * y;
+    const clickX = ((e.clientX - rect.left) / rect.width) * x;
+    const clickY = ((e.clientY - rect.top) / rect.height) * y;
 
-    setClickedPos((prev) => [...prev, { x: mouseX, y: mouseY }]);
+    const newClickPos = { x: clickX, y: clickY };
+    setMousePosHere(newClickPos);
+    if (shape !== "mouse") {
+      if (mouseList.length >= (shapeRequiredLengths[shape || ""])) {
+        setRenderDataFunc();
+        setMouseList([newClickPos]);
+        setIsDrawing(false);
+
+      } else {
+        setMouseList((prevMouseList) => [...prevMouseList, newClickPos]);
+        setIsDrawing(true);
+      }
+    }
   };
+
+
+  useEffect(() => {
+    if (mouseList.length === (shapeRequiredLengths[shape || ""]) - 1 && shape !== "mouse") {
+      setRendering(getPreRenderPoint(shape || "", [...mouseList, mousePosHere!]));
+    }
+
+  }, [mousePosHere]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -64,111 +118,69 @@ export default function FrameComponent({
     const ctx = canvas.getContext("2d");
 
     if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before rendering
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const result = executeCommand(drawData);
-
-    console.log(result);
-    result.drawData.forEach((item) => {
-      const shapeColor = item.color || "black";
-      const strokeWidth = item.strokeWidth || 1;
-
-
-      if (item.type === "line") {
-        item.points.forEach(([px, py]) => {
-          ctx.fillStyle = shapeColor;
-          ctx.beginPath();
-          ctx.fillRect(px, py, strokeWidth, strokeWidth);
-          ctx.fill();
-          if (strokeWidth > 1) {
-            ctx.strokeStyle = shapeColor;
-            ctx.lineWidth = strokeWidth;
-            ctx.strokeRect(px, py, strokeWidth, strokeWidth);
-          }
-        });
-      } else {
-        const pts = item.points.slice();
-        const center = pts
-          .reduce((acc, [px, py]) => [acc[0] + px, acc[1] + py], [0, 0])
-          .map((val) => val / pts.length);
-
-        pts.sort(
-          (a, b) =>
-            Math.atan2(a[1] - center[1], a[0] - center[0]) -
-            Math.atan2(b[1] - center[1], b[0] - center[0])
-        );
-
-        ctx.beginPath();
-        ctx.moveTo(pts[0][0], pts[0][1]);
-        pts.slice(1).forEach(([px, py]) => {
-          ctx.lineTo(px, py);
-        });
-        ctx.closePath();
-        ctx.fillStyle = shapeColor;
-        ctx.fill();
-        if (strokeWidth > 1) {
-          ctx.strokeStyle = "black";
-          ctx.lineWidth = strokeWidth;
-          ctx.stroke();
-        }
-      }
+    renderData.forEach((item) => {
+      const points = getPreRenderPoint(item.shape, item.controlPoints);
+      ctx.fillStyle = item.color || "#808080";
+      points.forEach((point) => {
+        ctx.fillRect(point.x, point.y, 1, 1);
+      });
     });
-  }, [x, y, bgColor, drawData]);
-  useEffect(() => {
-    if (mousePos) {
-      setMousePos?.(mousePos);
-    }
-  }, [mousePos]);
+
+    rendering.forEach((item) => {
+      ctx.fillStyle = "#808080";
+      ctx.fillRect(item.x, item.y, 1, 1);
+    });
+  }, [x, y, bgColor, rendering, renderData]);
+
+
 
   return (
-    <div>
-      <ul>
-        {mouseList.map((pos, index) => (
-          <li key={index}>
-            ({pos.x.toFixed(2)}, {pos.y.toFixed(2)})
-          </li>
-        ))}
-      </ul>
-      <div
+    <div
+      style={{
+        aspectRatio: `${x} / ${y}`,
+        position: "relative",
+      }}
+      onMouseMove={(e) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = ((e.clientX - rect.left) / rect.width) * x;
+        const mouseY = ((e.clientY - rect.top) / rect.height) * y;
+
+        setMousePos?.({ x: mouseX, y: mouseY });
+        setMousePosHere({ x: mouseX, y: mouseY });
+      }}
+      onClick={handleMouseClick}
+    >
+      <canvas
+        ref={canvasRef}
         style={{
-          aspectRatio: `${x} / ${y}`,
-          position: "relative",
+          width: "100%",
+          height: "100%",
+          backgroundColor: bgColor,
+          imageRendering: "pixelated",
         }}
-        onMouseMove={(e) => {
-          const canvas = canvasRef.current;
-          if (!canvas) return;
-
-          const rect = canvas.getBoundingClientRect();
-          const mouseX = ((e.clientX - rect.left) / rect.width) * x;
-          const mouseY = ((e.clientY - rect.top) / rect.height) * y;
-
-          setMousePos?.({ x: mouseX, y: mouseY });
-        }}
-      >
-        <canvas
-          ref={canvasRef}
+      />
+      {grid && (
+        <div
           style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: bgColor,
+            pointerEvents: "none",
+            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px)`,
+            backgroundSize: `${Math.min(x, y) / (Math.min(x, y) / 50)}px ${Math.min(x, y) / (Math.min(x, y) / 50)}px`,
           }}
         />
-        {grid && (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              pointerEvents: "none",
-              backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px)`,
-              backgroundSize: `${Math.min(x, y) / 5}px ${Math.min(x, y) / 5}px`,
-            }}
-          />
-        )}
-      </div>
-    </div>
+      )}
+
+    </div >
   );
 }
