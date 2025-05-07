@@ -37,7 +37,7 @@ export default function FrameComponent({
       const shapeColor = item.color || "black";
       const strokeWidth = item.strokeWidth || 1;
 
-      if (item.type === "line" || item.type === "hermite") {
+      if (item.type === "line" || item.type === "hermite" || item.type === "bezier") {
         drawLineShape(ctx, item.points, shapeColor, strokeWidth);
       } else {
         drawPolygonShape(ctx, item.points, shapeColor, strokeWidth);
