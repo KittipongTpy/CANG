@@ -178,9 +178,9 @@ export default function App() {
                       <span className="text-gray-400">Ex. HER 1 1 90 80 25 35 75 85</span>
                     </p>
                     <p className="pl-4 text-gray-400 font-medium">
-                      BEZ &lt;x0&gt; &lt;y0&gt; &lt;x1&gt; &lt;y1&gt; &lt;x2&gt; &lt;y2&gt;
+                      BEZ &lt;x0&gt; &lt;y0&gt; &lt;x1&gt; &lt;y1&gt; &lt;x2&gt; &lt;y2&gt; &lt;x3&gt; &lt;y3&gt;
                       <br />
-                      <span className="text-gray-400">Ex. BEZ 20 20 85 95 50 35</span>
+                      <span className="text-gray-400">Ex. BEZ 20 20 85 95 50 35 15 10</span>
                     </p>
 
                     <p className="mt-3"><span className="font-bold text-gray-300">Custom color and border :</span></p>
