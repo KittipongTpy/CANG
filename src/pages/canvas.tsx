@@ -35,6 +35,7 @@ interface Shape {
   color?: string;
   isFilled?: boolean;
   strokeWidth?: number;
+  points?: { x: number; y: number }[];
 }
 export default function App() {
   const [code, setCode] = useState<string>("");
@@ -42,8 +43,8 @@ export default function App() {
   const [codeCommand, setCodeCommand] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [shape, setShape] = useState<"mouse" | "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite">("mouse");
-  const [fx, setFx] = useState<number>(100);
-  const [fy, setFy] = useState<number>(100);
+  const [fx, setFx] = useState<number>(1000);
+  const [fy, setFy] = useState<number>(1000);
   const [grid, setGrid] = useState<boolean>(true);
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [renderData, setRenderData] = useState<Shape[]>([]);
@@ -164,6 +165,8 @@ export default function App() {
                       shape={shape}
                       renderData={renderData}
                       setRenderData={setRenderData}
+                      id={shapeId}
+                      setId={setShapeId}
 
                     />
                   )}

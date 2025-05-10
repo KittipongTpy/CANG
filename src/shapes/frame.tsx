@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 
 import { executeCommand } from "../command/render";
 import { getPreRenderPoint } from "../preRender/preRender";
+import { render } from "react-dom";
+import { it } from "node:test";
 interface FrameProps {
   x: number;
   y: number;
@@ -17,6 +19,7 @@ interface FrameProps {
     color?: string;
     isFilled?: boolean;
     strokeWidth?: number;
+    points?: { x: number; y: number }[];
   }[];
   setRenderData: React.Dispatch<React.SetStateAction<{
     shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
@@ -24,7 +27,10 @@ interface FrameProps {
     color?: string;
     isFilled?: boolean;
     strokeWidth?: number;
+    points?: { x: number; y: number }[];
   }[]>>;
+  id: number | null;
+  setId: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 
@@ -39,6 +45,8 @@ export default function FrameComponent({
   shape,
   renderData,
   setRenderData,
+  id,
+  setId
 }: FrameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -68,7 +76,13 @@ export default function FrameComponent({
         strokeWidth: 1,
       },
     ]);
+    if (setId) {
+      setId(renderData.length);
+    }
+    setRendering([]);
   }
+
+
 
   useEffect(() => {
     if (!shape) return;
@@ -98,8 +112,23 @@ export default function FrameComponent({
       } else {
         setMouseList((prevMouseList) => [...prevMouseList, newClickPos]);
         setIsDrawing(true);
+
       }
+    } else {
+      renderData.forEach((item, index) => {
+        const points = item.points || [];
+        points.forEach((point) => {
+          if (
+            Math.abs(point.x - Math.ceil(newClickPos.x)) < 5 &&
+            Math.abs(point.y - Math.ceil(newClickPos.y)) < 5
+          ) {
+            setId(index);
+          }
+        });
+      });
     }
+
+
   };
 
 
@@ -107,7 +136,6 @@ export default function FrameComponent({
     if (mouseList.length === (shapeRequiredLengths[shape || ""]) - 1 && shape !== "mouse") {
       setRendering(getPreRenderPoint(shape || "", [...mouseList, mousePosHere!]));
     }
-
   }, [mousePosHere]);
 
   useEffect(() => {
@@ -122,19 +150,57 @@ export default function FrameComponent({
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+
+
+    mouseList.forEach((point) => {
+
+      ctx.beginPath();
+      ctx.arc(point.x - 2, point.y - 2, 0.01 * Math.min(x, y), 0, 2 * Math.PI);
+      ctx.fillStyle = "rgb(0, 119, 255)";
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "rgb(129, 188, 255)";
+      ctx.stroke();
+
+    });
+
     renderData.forEach((item) => {
       const points = getPreRenderPoint(item.shape, item.controlPoints);
+      const temPoints = points;
+      setRenderData((prevRenderData) =>
+        prevRenderData.map((item, index) =>
+          index === id ? { ...item, points: temPoints } : item
+        )
+      );
       ctx.fillStyle = item.color || "#808080";
       points.forEach((point) => {
-        ctx.fillRect(point.x, point.y, 1, 1);
+        ctx.fillRect(point.x, point.y, Math.ceil(0.003 * Math.min(x, y)), Math.ceil(0.003 * Math.min(x, y)));
       });
     });
 
     rendering.forEach((item) => {
       ctx.fillStyle = "#808080";
-      ctx.fillRect(item.x, item.y, 1, 1);
+      ctx.fillRect(item.x, item.y, Math.ceil(0.003 * Math.min(x, y)), Math.ceil(0.003 * Math.min(x, y)));
     });
-  }, [x, y, bgColor, rendering, renderData]);
+
+    if (id !== null) {
+      renderData.forEach((item, index) => {
+        if (index === id) {
+          ctx.fillStyle = "rgb(0, 119, 255)";
+          item.controlPoints.forEach((point) => {
+            ctx.beginPath();
+            ctx.arc(point.x - 2, point.y - 2, 0.01 * Math.min(x, y), 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "rgb(129, 188, 255)";
+            ctx.stroke();
+          });
+        }
+      });
+    }
+
+
+  },);
 
 
 
