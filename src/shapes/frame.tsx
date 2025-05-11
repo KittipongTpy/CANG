@@ -4,6 +4,8 @@ import { executeCommand } from "../command/render";
 import { getPreRenderPoint } from "../preRender/preRender";
 import { render } from "react-dom";
 import { it } from "node:test";
+import type { Shape } from "../pages/canvas";
+
 interface FrameProps {
   x: number;
   y: number;
@@ -175,19 +177,13 @@ export default function FrameComponent({
     });
 
     renderData.forEach((item, index) => {
-      const points = getPreRenderPoint(item.shape, item.controlPoints);
-      const temPoints = points;
-      setRenderData((prevRenderData) =>
-        prevRenderData.map((item, index) =>
-          index === id ? { ...item, points: temPoints } : item
-        )
-      );
+      const points = item.points ?? getPreRenderPoint(item.shape, item.controlPoints);
       if (index === id) {
         ctx.fillStyle = "rgb(0, 119, 255)"
-        const minX = Math.min(...temPoints.map((point) => point.x));
-        const maxX = Math.max(...temPoints.map((point) => point.x));
-        const minY = Math.min(...temPoints.map((point) => point.y));
-        const maxY = Math.max(...temPoints.map((point) => point.y));
+        const minX = Math.min(...points.map((point) => point.x));
+        const maxX = Math.max(...points.map((point) => point.x));
+        const minY = Math.min(...points.map((point) => point.y));
+        const maxY = Math.max(...points.map((point) => point.y));
         ctx.strokeStyle = "rgb(0, 119, 255)";
         ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
       } else {
@@ -269,4 +265,28 @@ export default function FrameComponent({
 
     </div >
   );
+}
+
+export function shapeToCommand(shape: Shape): string {
+  const round = (n: number) => Math.round(n);
+
+  switch (shape.shape) {
+    case "circle": {
+      const [center, edge] = shape.controlPoints;
+      const r = Math.round(Math.hypot(edge.x - center.x, edge.y - center.y));
+      return `CIR ${round(center.x)} ${round(center.y)} ${r}`;
+    }
+    case "ellipse": {
+      const [center, edge] = shape.controlPoints;
+      const rx = round(Math.abs(edge.x - center.x));
+      const ry = round(Math.abs(edge.y - center.y));
+      return `ELI ${round(center.x)} ${round(center.y)} ${rx} ${ry}`;
+    }
+    case "line": {
+      const [p1, p2] = shape.controlPoints;
+      return `LIN ${round(p1.x)} ${round(p1.y)} ${round(p2.x)} ${round(p2.y)}`;
+    }
+    default:
+      return "// Unsupported shape";
+  }
 }
