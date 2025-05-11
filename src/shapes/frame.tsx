@@ -103,32 +103,42 @@ export default function FrameComponent({
 
     const newClickPos = { x: clickX, y: clickY };
     setMousePosHere(newClickPos);
-    if (shape !== "mouse") {
+
+    // Check if we clicked on any existing shape
+    let shapeClicked = false;
+    console.log(clickX, clickY);
+    // Loop through shapes in reverse order (top to bottom)
+    for (let i = renderData.length - 1; i >= 0; i--) {
+      const item = renderData[i];
+      console.log("item", item.shape);
+      console.log()
+      if (!item.points) continue;
+
+      // Check if click is within any point of the shape
+      for (const point of item.points) {
+        const distance = Math.sqrt((clickX - point.x) ** 2 + (clickY - point.y) ** 2);
+        if (distance <= 5) { // Adjust the threshold as needed
+          // Select this shape
+          setId(i);
+          console.log("Selected shape:", item);
+          shapeClicked = true;
+          break; // Stop after first hit
+        }
+
+      }
+    }
+
+    // If we didn't click on any shape and we're in drawing mode
+    if (!shapeClicked && shape !== "mouse") {
       if (mouseList.length >= (shapeRequiredLengths[shape || ""])) {
         setRenderDataFunc();
         setMouseList([newClickPos]);
         setIsDrawing(false);
-
       } else {
         setMouseList((prevMouseList) => [...prevMouseList, newClickPos]);
         setIsDrawing(true);
-
       }
-    } else {
-      renderData.forEach((item, index) => {
-        const points = item.points || [];
-        points.forEach((point) => {
-          if (
-            Math.abs(point.x - Math.ceil(newClickPos.x)) < 5 &&
-            Math.abs(point.y - Math.ceil(newClickPos.y)) < 5
-          ) {
-            setId(index);
-          }
-        });
-      });
     }
-
-
   };
 
 
@@ -164,7 +174,7 @@ export default function FrameComponent({
 
     });
 
-    renderData.forEach((item) => {
+    renderData.forEach((item, index) => {
       const points = getPreRenderPoint(item.shape, item.controlPoints);
       const temPoints = points;
       setRenderData((prevRenderData) =>
@@ -172,35 +182,45 @@ export default function FrameComponent({
           index === id ? { ...item, points: temPoints } : item
         )
       );
-      ctx.fillStyle = item.color || "#808080";
+      if (index === id) {
+        ctx.fillStyle = "rgb(0, 119, 255)"
+        const minX = Math.min(...temPoints.map((point) => point.x));
+        const maxX = Math.max(...temPoints.map((point) => point.x));
+        const minY = Math.min(...temPoints.map((point) => point.y));
+        const maxY = Math.max(...temPoints.map((point) => point.y));
+        ctx.strokeStyle = "rgb(0, 119, 255)";
+        ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+      } else {
+        ctx.fillStyle = item.color || "#808080";
+      }
       points.forEach((point) => {
         ctx.fillRect(point.x, point.y, Math.ceil(0.003 * Math.min(x, y)), Math.ceil(0.003 * Math.min(x, y)));
       });
+      if (index === id) {
+        const selectedItem = item;
+        ctx.fillStyle = "rgb(0, 119, 255)";
+        selectedItem.controlPoints.forEach((point) => {
+          ctx.beginPath();
+          ctx.arc(point.x - 2, point.y - 2, 0.01 * Math.min(x, y), 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = "rgb(129, 188, 255)";
+          ctx.stroke();
+        });
+
+      }
+
     });
+
 
     rendering.forEach((item) => {
       ctx.fillStyle = "#808080";
       ctx.fillRect(item.x, item.y, Math.ceil(0.003 * Math.min(x, y)), Math.ceil(0.003 * Math.min(x, y)));
     });
 
-    if (id !== null) {
-      renderData.forEach((item, index) => {
-        if (index === id) {
-          ctx.fillStyle = "rgb(0, 119, 255)";
-          item.controlPoints.forEach((point) => {
-            ctx.beginPath();
-            ctx.arc(point.x - 2, point.y - 2, 0.01 * Math.min(x, y), 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = "rgb(129, 188, 255)";
-            ctx.stroke();
-          });
-        }
-      });
-    }
 
 
-  },);
+  }, [x, y, bgColor, mouseList, renderData, rendering, shape, id]);
 
 
 

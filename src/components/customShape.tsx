@@ -49,7 +49,14 @@ export default function CustomShape({ renderData, id, setRenderData }: FrameProp
                                             placeholder="xxxxx"
                                             className="w-[6ch] text-center"
                                             value={String(Math.floor(point.y))}
-                                            aria-label={`Y coordinate for point ${index + 1}`}
+                                            onChange={(e) => {
+                                                if (isNaN(parseFloat(e.target.value))) return;
+                                                const updatedData = [...renderData];
+                                                updatedData[id].controlPoints[index].y = parseFloat(e.target.value);
+                                                setRenderData(updatedData);
+                                                // setRenderData(updatedData);
+                                            }}
+                                            aria-label={`X coordinate for point ${index + 1}`}
                                         />
                                     </div>
                                 </div>
@@ -101,15 +108,7 @@ export default function CustomShape({ renderData, id, setRenderData }: FrameProp
                 </CardBody>
                 <CardFooter>
                     <div className="flex justify-between w-full">
-                        <Button
-                            color="primary"
-                            aria-label="Apply changes"
-                            onPress={() => {
-                                setRenderData([...renderData]); // Trigger re-render by updating state
-                            }}
-                        >
-                            <MdEdit />Apply
-                        </Button>
+
                         <Button color="danger" aria-label="Delete shape">
                             <MdDelete />Delete
                         </Button>
