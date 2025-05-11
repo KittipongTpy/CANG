@@ -1,6 +1,6 @@
 export function line(
   command: string,
-): string | { type: "line"; points: [number, number][]; color?: string ; strokeWidth?: number} | null {
+): string | { type: "line"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ; strokeWidth?: number} | null {
   const parts = command.trim().split(/\s+/);
 
   if (parts.length !== 5 && parts.length !== 7 && parts.length !== 9) {
@@ -75,5 +75,5 @@ if (parts.length === 5) {
 }
 
  
-  return { type: "line", points, color , strokeWidth };
+  return { type: "line", points, controlPoints: [[x1, y1], [x2, y2]], color , strokeWidth };
 }
