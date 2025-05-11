@@ -76,6 +76,8 @@ export default function App() {
     if (errors.length > 0 && errors[0] !== " ") {
       setErrorMessage(errors.join(", "));
     }
+    setFx(initFrame.width);
+    setFy(initFrame.height);
 
     setFrame({ x: initFrame.width, y: initFrame.height });
     setCodeCommand(restCommand);
