@@ -1,7 +1,6 @@
 import { Card, CardBody, Button, CardFooter, Input, Switch, Slider } from "@heroui/react";
 import { MdEdit, MdDelete } from "react-icons/md";
 
-// ...existing code...
 interface FrameProps {
     renderData: {
         shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
@@ -18,8 +17,10 @@ export default function CustomShape({ renderData, id, setRenderData }: FrameProp
     return (
         <div className="w-full">
             <Card className="bg-background/60 dark:bg-[#3F3F46] w-full">
-                <CardBody className="">
+                <CardBody>
                     <h3 className="text-lg font-bold">{renderData[id].shape}</h3>
+
+                    {/* Control Points */}
                     <div className="mt-2 flex flex-col space-y-2">
                         <p className="font-semibold">Control Points:</p>
                         <ul className="list-disc list-inside">
@@ -29,7 +30,6 @@ export default function CustomShape({ renderData, id, setRenderData }: FrameProp
                                         <label htmlFor={`x-coord-${index}`}>X :</label>
                                         <Input
                                             id={`x-coord-${index}`}
-                                            placeholder="xxxxx"
                                             className="w-[6ch] text-center"
                                             value={String(Math.floor(point.x))}
                                             onChange={(e) => {
@@ -37,7 +37,6 @@ export default function CustomShape({ renderData, id, setRenderData }: FrameProp
                                                 const updatedData = [...renderData];
                                                 updatedData[id].controlPoints[index].x = parseFloat(e.target.value);
                                                 setRenderData(updatedData);
-                                                // setRenderData(updatedData);
                                             }}
                                             aria-label={`X coordinate for point ${index + 1}`}
                                         />
@@ -46,7 +45,6 @@ export default function CustomShape({ renderData, id, setRenderData }: FrameProp
                                         <label htmlFor={`y-coord-${index}`}>Y :</label>
                                         <Input
                                             id={`y-coord-${index}`}
-                                            placeholder="xxxxx"
                                             className="w-[6ch] text-center"
                                             value={String(Math.floor(point.y))}
                                             onChange={(e) => {
@@ -54,61 +52,68 @@ export default function CustomShape({ renderData, id, setRenderData }: FrameProp
                                                 const updatedData = [...renderData];
                                                 updatedData[id].controlPoints[index].y = parseFloat(e.target.value);
                                                 setRenderData(updatedData);
-                                                // setRenderData(updatedData);
                                             }}
-                                            aria-label={`X coordinate for point ${index + 1}`}
+                                            aria-label={`Y coordinate for point ${index + 1}`}
                                         />
                                     </div>
                                 </div>
                             ))}
                         </ul>
                     </div>
-                    {renderData[id].color && (
-                        <div className="flex items-center">
-                            <label htmlFor="shape-color" className="font-semibold mr-2">Color:</label>
-                            <div className="flex items-center">
-                                <Input
-                                    id="shape-color"
-                                    placeholder="xxxxx"
-                                    className="w-[10ch] text-center"
-                                    value={renderData[id].color}
-                                    onChange={(e) => {
-                                        const updatedData = [...renderData];
-                                        updatedData[id].color = e.target.value;
-                                        // setRenderData(updatedData);
-                                    }}
-                                    aria-label="Shape color"
-                                />
-                            </div>
-                        </div>
-                    )}
+
+                    {/* Color Picker */}
+                    <div className="mt-4 flex items-center space-x-2">
+                        <label htmlFor="shape-color" className="font-semibold">เลือกสี:</label>
+                        <Input
+                            id="shape-color"
+                            type="color"
+                            value={renderData[id].color || "#000000"}
+                            onChange={(e) => {
+                                const updatedData = [...renderData];
+                                updatedData[id].color = e.target.value;
+                                setRenderData(updatedData);
+                            }}
+                        />
+                    </div>
+
+                    {/* Fill Switch */}
                     {renderData[id].isFilled !== undefined && (
-                        <div className="flex items-center">
-                            <span id="fill-label" className="font-semibold mr-2">Filled:</span>
+                        <div className="mt-4 flex items-center space-x-2">
+                            <span className="font-semibold">Filled:</span>
                             <Switch
-                                defaultSelected={renderData[id].isFilled}
+                                isSelected={renderData[id].isFilled}
+                                onChange={(isSelected) => {
+                                    const updatedData = [...renderData];
+                                    updatedData[id].isFilled = isSelected;
+                                    setRenderData(updatedData);
+                                }}
                                 size="sm"
-                                aria-labelledby="fill-label"
                             />
                         </div>
                     )}
-                    {renderData[id].strokeWidth && (
-                        <div className="flex flex-col space-y-2">
-                            <label id="stroke-width-label" className="font-semibold">Stroke Width:</label>
+
+                    {/* Stroke Width Slider */}
+                    {renderData[id].strokeWidth !== undefined && (
+                        <div className="mt-4">
+                            <label className="font-semibold">Stroke Width:</label>
                             <Slider
                                 className="max-w-md"
-                                defaultValue={renderData[id].strokeWidth}
+                                value={renderData[id].strokeWidth}
                                 maxValue={20}
                                 minValue={1}
                                 step={1}
-                                aria-labelledby="stroke-width-label"
+                                onChange={(value) => {
+                                    const updatedData = [...renderData];
+                                    updatedData[id].strokeWidth = value;
+                                    setRenderData(updatedData);
+                                }}
                             />
                         </div>
                     )}
                 </CardBody>
+
                 <CardFooter>
                     <div className="flex justify-between w-full">
-
                         <Button color="danger" aria-label="Delete shape">
                             <MdDelete />Delete
                         </Button>
