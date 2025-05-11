@@ -1,9 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-
-import { executeCommand } from "../command/render";
 import { getPreRenderPoint } from "../preRender/preRender";
-import { render } from "react-dom";
-import { it } from "node:test";
+
 interface FrameProps {
   x: number;
   y: number;
@@ -32,8 +29,6 @@ interface FrameProps {
   id: number | null;
   setId: React.Dispatch<React.SetStateAction<number | null>>;
 }
-
-
 
 export default function FrameComponent({
   x,
@@ -80,9 +75,7 @@ export default function FrameComponent({
       setId(renderData.length);
     }
     setRendering([]);
-  }
-
-
+  };
 
   useEffect(() => {
     if (!shape) return;
@@ -100,35 +93,24 @@ export default function FrameComponent({
     const rect = canvas.getBoundingClientRect();
     const clickX = ((e.clientX - rect.left) / rect.width) * x;
     const clickY = ((e.clientY - rect.top) / rect.height) * y;
-
     const newClickPos = { x: clickX, y: clickY };
     setMousePosHere(newClickPos);
 
-    // Check if we clicked on any existing shape
     let shapeClicked = false;
-    console.log(clickX, clickY);
-    // Loop through shapes in reverse order (top to bottom)
+
     for (let i = renderData.length - 1; i >= 0; i--) {
       const item = renderData[i];
-      console.log("item", item.shape);
-      console.log()
       if (!item.points) continue;
-
-      // Check if click is within any point of the shape
       for (const point of item.points) {
         const distance = Math.sqrt((clickX - point.x) ** 2 + (clickY - point.y) ** 2);
-        if (distance <= 5) { // Adjust the threshold as needed
-          // Select this shape
+        if (distance <= 5) {
           setId(i);
-          console.log("Selected shape:", item);
           shapeClicked = true;
-          break; // Stop after first hit
+          break;
         }
-
       }
     }
 
-    // If we didn't click on any shape and we're in drawing mode
     if (!shapeClicked && shape !== "mouse") {
       if (mouseList.length >= (shapeRequiredLengths[shape || ""])) {
         setRenderDataFunc();
@@ -140,7 +122,6 @@ export default function FrameComponent({
       }
     }
   };
-
 
   useEffect(() => {
     if (mouseList.length === (shapeRequiredLengths[shape || ""]) - 1 && shape !== "mouse") {
@@ -154,16 +135,13 @@ export default function FrameComponent({
     canvas.width = x;
     canvas.height = y;
     const ctx = canvas.getContext("2d");
-
     if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before rendering
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-
-
     mouseList.forEach((point) => {
-
       ctx.beginPath();
       ctx.arc(point.x - 2, point.y - 2, 0.01 * Math.min(x, y), 0, 2 * Math.PI);
       ctx.fillStyle = "rgb(0, 119, 255)";
@@ -171,35 +149,71 @@ export default function FrameComponent({
       ctx.lineWidth = 4;
       ctx.strokeStyle = "rgb(129, 188, 255)";
       ctx.stroke();
-
     });
 
     renderData.forEach((item, index) => {
       const points = getPreRenderPoint(item.shape, item.controlPoints);
-      const temPoints = points;
+      if (!points.length) return;
+
+      // อัปเดต points กลับเข้า renderData
       setRenderData((prevRenderData) =>
-        prevRenderData.map((item, index) =>
-          index === id ? { ...item, points: temPoints } : item
+        prevRenderData.map((it, idx) =>
+          idx === index ? { ...it, points } : it
         )
       );
+
+      ctx.lineWidth = item.strokeWidth || 1;
+      ctx.strokeStyle = item.color || "#000000";
+      ctx.fillStyle = item.color || "#000000";
+
+      if (item.shape === "line") {
+        const [start, end] = points;
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.stroke();
+      } else if (item.shape === "rectangle") {
+        const minX = Math.min(...points.map(p => p.x));
+        const maxX = Math.max(...points.map(p => p.x));
+        const minY = Math.min(...points.map(p => p.y));
+        const maxY = Math.max(...points.map(p => p.y));
+        const w = maxX - minX;
+        const h = maxY - minY;
+
+        if (item.isFilled) {
+          ctx.fillRect(minX, minY, w, h);
+        } else {
+          ctx.strokeRect(minX, minY, w, h);
+        }
+      } else if (item.shape === "circle" || item.shape === "ellipse") {
+        const center = item.controlPoints[0];
+        const edge = item.controlPoints[1];
+        const radiusX = Math.abs(edge.x - center.x);
+        const radiusY = Math.abs(edge.y - center.y);
+
+        ctx.beginPath();
+        if (item.shape === "circle") {
+          ctx.arc(center.x, center.y, radiusX, 0, 2 * Math.PI);
+        } else {
+          ctx.ellipse(center.x, center.y, radiusX, radiusY, 0, 0, 2 * Math.PI);
+        }
+        item.isFilled ? ctx.fill() : ctx.stroke();
+      } else {
+        points.forEach(point => {
+          ctx.fillRect(point.x, point.y, 1, 1);
+        });
+      }
+
       if (index === id) {
-        ctx.fillStyle = "rgb(0, 119, 255)"
-        const minX = Math.min(...temPoints.map((point) => point.x));
-        const maxX = Math.max(...temPoints.map((point) => point.x));
-        const minY = Math.min(...temPoints.map((point) => point.y));
-        const maxY = Math.max(...temPoints.map((point) => point.y));
+        const minX = Math.min(...points.map(p => p.x));
+        const maxX = Math.max(...points.map(p => p.x));
+        const minY = Math.min(...points.map(p => p.y));
+        const maxY = Math.max(...points.map(p => p.y));
         ctx.strokeStyle = "rgb(0, 119, 255)";
         ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-      } else {
-        ctx.fillStyle = item.color || "#808080";
-      }
-      points.forEach((point) => {
-        ctx.fillRect(point.x, point.y, Math.ceil(0.003 * Math.min(x, y)), Math.ceil(0.003 * Math.min(x, y)));
-      });
-      if (index === id) {
-        const selectedItem = item;
+
         ctx.fillStyle = "rgb(0, 119, 255)";
-        selectedItem.controlPoints.forEach((point) => {
+        item.controlPoints.forEach((point) => {
           ctx.beginPath();
           ctx.arc(point.x - 2, point.y - 2, 0.01 * Math.min(x, y), 0, 2 * Math.PI);
           ctx.fill();
@@ -207,22 +221,14 @@ export default function FrameComponent({
           ctx.strokeStyle = "rgb(129, 188, 255)";
           ctx.stroke();
         });
-
       }
-
     });
-
 
     rendering.forEach((item) => {
       ctx.fillStyle = "#808080";
       ctx.fillRect(item.x, item.y, Math.ceil(0.003 * Math.min(x, y)), Math.ceil(0.003 * Math.min(x, y)));
     });
-
-
-
   }, [x, y, bgColor, mouseList, renderData, rendering, shape, id]);
-
-
 
   return (
     <div
@@ -233,11 +239,9 @@ export default function FrameComponent({
       onMouseMove={(e) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-
         const rect = canvas.getBoundingClientRect();
         const mouseX = ((e.clientX - rect.left) / rect.width) * x;
         const mouseY = ((e.clientY - rect.top) / rect.height) * y;
-
         setMousePos?.({ x: mouseX, y: mouseY });
         setMousePosHere({ x: mouseX, y: mouseY });
       }}
@@ -266,7 +270,6 @@ export default function FrameComponent({
           }}
         />
       )}
-
-    </div >
+    </div>
   );
 }
