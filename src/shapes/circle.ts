@@ -1,6 +1,6 @@
 export function circle(
   command: string,
-): string | { type: "circle"; points: [number, number][]; color?: string ; strokeWidth? : number } | null {
+): string | { type: "circle"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ; strokeWidth? : number } | null {
   const parts = command.trim().split(/\s+/);
 
   if (parts.length !== 4 && parts.length !== 6 && parts.length !== 8) {
@@ -74,7 +74,5 @@ export function circle(
     strokeWidth = width;
   }
 
-
-
-  return { type: "circle", points, color ,strokeWidth};
+  return { type: "circle", points, controlPoints: [[cx, cy],[cx + r, cy]], color ,strokeWidth};
 }

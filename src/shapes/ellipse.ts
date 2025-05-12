@@ -1,6 +1,6 @@
 export function ellipse(
   command: string,
-): string | { type: "ellipse"; points: [number, number][]; color?: string ;strokeWidth? : number } | null {
+): string | { type: "ellipse"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ;strokeWidth? : number } | null {
   const parts = command.trim().split(/\s+/);
 
  if (parts.length !== 5 && parts.length !== 7 && parts.length !== 9) {
@@ -102,5 +102,5 @@ export function ellipse(
     strokeWidth = width;
   }
 
-  return { type: "ellipse", points, color, strokeWidth };
+  return { type: "ellipse", points, controlPoints: [[cx, cy], [cx + rx, cy]], color, strokeWidth };
 }
