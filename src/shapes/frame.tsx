@@ -83,6 +83,14 @@ export default function FrameComponent({
   };
 
   const setRenderDataFunc = () => {
+    let calculatedControlPoints = mouseList;
+    // [p1, r1_abs, p2_abs, r2_abs]
+    if (shape === "hermite" && mouseList.length === 4) {
+      const [p1_abs, r1_abs, p2_abs, r2_abs] = mouseList;
+      const r1Vec = { x: r1_abs.x - p1_abs.x, y: r1_abs.y - p1_abs.y };
+      const r2Vec = { x: r2_abs.x - p2_abs.x, y: r2_abs.y - p2_abs.y };
+      calculatedControlPoints = [p1_abs, r1Vec, r2Vec, p2_abs,];
+    }
     setRenderData((prevRenderData) => [
       ...prevRenderData,
       {
@@ -93,7 +101,7 @@ export default function FrameComponent({
           | "ellipse"
           | "bezier"
           | "hermite",
-        controlPoints: mouseList,
+        controlPoints: calculatedControlPoints, 
         color: "#808080",
         isFilled: false,
         strokeWidth: 1,
