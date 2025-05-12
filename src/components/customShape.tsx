@@ -7,7 +7,7 @@ import {
   Switch,
   Slider,
 } from "@heroui/react";
-import { MdDelete } from "react-icons/md";
+import { MdEdit, MdDelete } from "react-icons/md";
 
 interface FrameProps {
   renderData: {
@@ -41,37 +41,35 @@ export default function CustomShape({
                   <div className="flex items-center">
                     <label htmlFor={`x-coord-${index}`}>X :</label>
                     <Input
-                      aria-label={`X coordinate for point ${index + 1}`}
-                      className="w-[6ch] text-center"
                       id={`x-coord-${index}`}
+                      className="w-[6ch] text-center"
                       value={String(Math.floor(point.x))}
                       onChange={(e) => {
                         if (isNaN(parseFloat(e.target.value))) return;
                         const updatedData = [...renderData];
-
                         updatedData[id].controlPoints[index].x = parseFloat(
-                          e.target.value,
+                          e.target.value
                         );
                         setRenderData(updatedData);
                       }}
+                      aria-label={`X coordinate for point ${index + 1}`}
                     />
                   </div>
                   <div className="flex items-center">
                     <label htmlFor={`y-coord-${index}`}>Y :</label>
                     <Input
-                      aria-label={`Y coordinate for point ${index + 1}`}
-                      className="w-[6ch] text-center"
                       id={`y-coord-${index}`}
+                      className="w-[6ch] text-center"
                       value={String(Math.floor(point.y))}
                       onChange={(e) => {
                         if (isNaN(parseFloat(e.target.value))) return;
                         const updatedData = [...renderData];
-
                         updatedData[id].controlPoints[index].y = parseFloat(
-                          e.target.value,
+                          e.target.value
                         );
                         setRenderData(updatedData);
                       }}
+                      aria-label={`Y coordinate for point ${index + 1}`}
                     />
                   </div>
                 </div>
@@ -81,7 +79,7 @@ export default function CustomShape({
 
           {/* Color Picker */}
           <div className="mt-4 flex items-center space-x-2">
-            <label className="font-semibold" htmlFor="shape-color">
+            <label htmlFor="shape-color" className="font-semibold">
               เลือกสี:
             </label>
             <Input
@@ -90,7 +88,6 @@ export default function CustomShape({
               value={renderData[id].color || "#000000"}
               onChange={(e) => {
                 const updatedData = [...renderData];
-
                 updatedData[id].color = e.target.value;
                 setRenderData(updatedData);
               }}
@@ -103,13 +100,12 @@ export default function CustomShape({
               <span className="font-semibold">Filled:</span>
               <Switch
                 isSelected={renderData[id].isFilled}
-                size="sm"
                 onChange={(isSelected) => {
                   const updatedData = [...renderData];
-
                   updatedData[id].isFilled = isSelected;
                   setRenderData(updatedData);
                 }}
+                size="sm"
               />
             </div>
           )}
@@ -120,13 +116,12 @@ export default function CustomShape({
               <label className="font-semibold">Stroke Width:</label>
               <Slider
                 className="max-w-md"
+                value={renderData[id].strokeWidth}
                 maxValue={20}
                 minValue={1}
                 step={1}
-                value={renderData[id].strokeWidth}
                 onChange={(value) => {
                   const updatedData = [...renderData];
-
                   updatedData[id].strokeWidth = value;
                   setRenderData(updatedData);
                 }}
@@ -137,7 +132,7 @@ export default function CustomShape({
 
         <CardFooter>
           <div className="flex justify-between w-full">
-            <Button aria-label="Delete shape" color="danger">
+            <Button color="danger" aria-label="Delete shape">
               <MdDelete />
               Delete
             </Button>

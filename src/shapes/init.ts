@@ -30,7 +30,7 @@ export function init(command: string): string | Frame {
   currentFrame = { width, height };
   // console.log("Frame initialized:", currentFrame);
 
-  return currentFrame;
+  return currentFrame
 }
 
 // /**

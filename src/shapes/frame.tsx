@@ -1,8 +1,8 @@
-import type { Shape } from "../pages/canvas";
-
 import { useState, useEffect, useRef } from "react";
-
 import { getPreRenderPoint } from "../preRender/preRender";
+import { render } from "react-dom";
+import { it } from "node:test";
+import type { Shape } from "../pages/canvas";
 
 interface FrameProps {
   x: number;
@@ -108,7 +108,6 @@ export default function FrameComponent({
   useEffect(() => {
     if (!shape) return;
     const requiredLength = shapeRequiredLengths[shape] || 0;
-
     if (mouseList.length >= requiredLength) {
       setRenderDataFunc();
       setMouseList([]);
@@ -117,27 +116,23 @@ export default function FrameComponent({
 
   const handleMouseClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const canvas = canvasRef.current;
-
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
     const clickX = ((e.clientX - rect.left) / rect.width) * x;
     const clickY = ((e.clientY - rect.top) / rect.height) * y;
     const newClickPos = { x: clickX, y: clickY };
-
     setMousePosHere(newClickPos);
 
     let shapeClicked = false;
 
     for (let i = renderData.length - 1; i >= 0; i--) {
       const item = renderData[i];
-
       if (!item.points) continue;
       for (const point of item.points) {
         const distance = Math.sqrt(
-          (clickX - point.x) ** 2 + (clickY - point.y) ** 2,
+          (clickX - point.x) ** 2 + (clickY - point.y) ** 2
         );
-
         if (distance <= 5) {
           setId(i);
           shapeClicked = true;
@@ -164,19 +159,17 @@ export default function FrameComponent({
       shape !== "mouse"
     ) {
       setRendering(
-        getPreRenderPoint(shape || "", [...mouseList, mousePosHere!]),
+        getPreRenderPoint(shape || "", [...mouseList, mousePosHere!])
       );
     }
   }, [mousePosHere]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-
     if (!canvas) return;
     canvas.width = x;
     canvas.height = y;
     const ctx = canvas.getContext("2d");
-
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -208,8 +201,8 @@ export default function FrameComponent({
       if (item.shape !== "line") {
         setRenderData((prevRenderData) =>
           prevRenderData.map((it, idx) =>
-            idx === index ? { ...it, points } : it,
-          ),
+            idx === index ? { ...it, points } : it
+          )
         );
       }
 
@@ -219,7 +212,6 @@ export default function FrameComponent({
 
       if (item.shape === "line") {
         const [start, end] = item.controlPoints;
-
         ctx.beginPath();
         ctx.moveTo(start.x, start.y);
         ctx.lineTo(end.x, end.y);
@@ -261,7 +253,6 @@ export default function FrameComponent({
         const maxX = Math.max(...points.map((p) => p.x));
         const minY = Math.min(...points.map((p) => p.y));
         const maxY = Math.max(...points.map((p) => p.y));
-
         ctx.strokeStyle = "rgb(0, 119, 255)";
         ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
 
@@ -273,7 +264,7 @@ export default function FrameComponent({
             point.y - 2,
             0.01 * Math.min(x, y),
             0,
-            2 * Math.PI,
+            2 * Math.PI
           );
           ctx.fill();
           ctx.lineWidth = 4;
@@ -289,7 +280,7 @@ export default function FrameComponent({
         item.x,
         item.y,
         Math.ceil(0.003 * Math.min(x, y)),
-        Math.ceil(0.003 * Math.min(x, y)),
+        Math.ceil(0.003 * Math.min(x, y))
       );
     });
   }, [x, y, bgColor, mouseList, renderData, rendering, shape, id]);
@@ -300,18 +291,16 @@ export default function FrameComponent({
         aspectRatio: `${x} / ${y}`,
         position: "relative",
       }}
-      onClick={handleMouseClick}
       onMouseMove={(e) => {
         const canvas = canvasRef.current;
-
         if (!canvas) return;
         const rect = canvas.getBoundingClientRect();
         const mouseX = ((e.clientX - rect.left) / rect.width) * x;
         const mouseY = ((e.clientY - rect.top) / rect.height) * y;
-
         setMousePos?.({ x: mouseX, y: mouseY });
         setMousePosHere({ x: mouseX, y: mouseY });
       }}
+      onClick={handleMouseClick}
     >
       <canvas
         ref={canvasRef}
@@ -332,19 +321,16 @@ export function shapeToCommand(shape: Shape): string {
     case "circle": {
       const [center, edge] = shape.controlPoints;
       const r = Math.round(Math.hypot(edge.x - center.x, edge.y - center.y));
-
       return `CIR ${round(center.x)} ${round(center.y)} ${r}`;
     }
     case "ellipse": {
       const [center, edge] = shape.controlPoints;
       const rx = round(Math.abs(edge.x - center.x));
       const ry = round(Math.abs(edge.y - center.y));
-
       return `ELI ${round(center.x)} ${round(center.y)} ${rx} ${ry}`;
     }
     case "line": {
       const [p1, p2] = shape.controlPoints;
-
       return `LIN ${round(p1.x)} ${round(p1.y)} ${round(p2.x)} ${round(p2.y)}`;
     }
     default:

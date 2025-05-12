@@ -19,6 +19,7 @@
 // import { getCurrentFrame } from "../shapes/init";
 // import { executeCommand } from "../command/render";
 
+
 // import DefaultLayout from "@/layouts/default";
 
 // export default function App() {
@@ -156,45 +157,44 @@ import { ellipse } from "../shapes/ellipse";
 import { line } from "../shapes/line";
 
 export type DrawData =
-  | { type: "circle"; points: [number, number][] }
-  | { type: "ellipse"; points: [number, number][] }
-  | { type: "line"; points: [number, number][] };
+    | { type: "circle"; points: [number, number][] }
+    | { type: "ellipse"; points: [number, number][] }
+    | { type: "line"; points: [number, number][] };
 
 const commandRegistry: Record<
-  string,
-  (command: string) => string | null | DrawData
+    string,
+    (command: string) => string | null | DrawData
 > = {
-  CIR: circle,
-  ELI: ellipse,
-  LIN: line,
+    CIR: circle,
+    ELI: ellipse,
+    LIN: line,
 };
 
 export function executeCommand(input: string): {
-  errors: string[];
-  drawData: DrawData[];
+    errors: string[];
+    drawData: DrawData[];
 } {
-  const errors: string[] = [];
-  const drawData: DrawData[] = [];
-  const commands = input.trim().split(/\r?\n/);
+    const errors: string[] = [];
+    const drawData: DrawData[] = [];
+    const commands = input.trim().split(/\r?\n/);
 
-  for (const line of commands) {
-    const [commandName] = line.trim().split(/\s+/);
-    const command = commandName.toUpperCase();
+    for (const line of commands) {
+        const [commandName] = line.trim().split(/\s+/);
+        const command = commandName.toUpperCase();
 
-    const handler = commandRegistry[command];
+        const handler = commandRegistry[command];
 
-    if (!handler) {
-      errors.push(`Unknown command: ${command}`);
-    } else {
-      const result = handler(line);
-
-      if (typeof result === "string") {
-        errors.push(result);
-      } else if (result) {
-        drawData.push(result);
-      }
+        if (!handler) {
+            errors.push(`Unknown command: ${command}`);
+        } else {
+            const result = handler(line);
+            if (typeof result === "string") {
+                errors.push(result);
+            } else if (result) {
+                drawData.push(result);
+            }
+        }
     }
-  }
 
-  return { errors, drawData };
+    return { errors, drawData };
 }
