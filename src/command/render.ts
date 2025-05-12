@@ -3,9 +3,27 @@ import { ellipse } from "../shapes/ellipse";
 import { line } from "../shapes/line";
 
 export type DrawData =
-  | { type: "circle"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ; strokeWidth?: number }
-  | { type: "ellipse"; points: [number, number][]; controlPoints?: [number, number][];color?: string ; strokeWidth?: number }
-  | { type: "line"; points: [number, number][]; controlPoints?: [number, number][];color?: string ; strokeWidth?: number };
+  | {
+      type: "circle";
+      points: [number, number][];
+      controlPoints?: [number, number][];
+      color?: string;
+      strokeWidth?: number;
+    }
+  | {
+      type: "ellipse";
+      points: [number, number][];
+      controlPoints?: [number, number][];
+      color?: string;
+      strokeWidth?: number;
+    }
+  | {
+      type: "line";
+      points: [number, number][];
+      controlPoints?: [number, number][];
+      color?: string;
+      strokeWidth?: number;
+    };
 const commandRegistry: Record<
   string,
   (command: string) => string | null | DrawData
@@ -21,22 +39,28 @@ export function executeCommand(input: string): {
 } {
   const errors: string[] = [];
   const drawData: DrawData[] = [];
-  const commands = input.trim().split(/\r?\n/).filter(line => line.trim().length > 0);
+  const commands = input
+    .trim()
+    .split(/\r?\n/)
+    .filter((line) => line.trim().length > 0);
 
   for (const line of commands) {
-      const [commandName] = line.trim().split(/\s+/);
-      const command = commandName.toUpperCase();
-      const handler = commandRegistry[command];
-      if (!handler) {
-          errors.push(`Unknown command: ${command}`);
-      } else {
-          const result = handler(line);
-          if (typeof result === "string") {
-              errors.push(result);
-          } else if (result) {
-              drawData.push(result);
-          }
+    const [commandName] = line.trim().split(/\s+/);
+    const command = commandName.toUpperCase();
+    const handler = commandRegistry[command];
+
+    if (!handler) {
+      errors.push(`Unknown command: ${command}`);
+    } else {
+      const result = handler(line);
+
+      if (typeof result === "string") {
+        errors.push(result);
+      } else if (result) {
+        drawData.push(result);
       }
+    }
   }
+
   return { errors, drawData };
 }

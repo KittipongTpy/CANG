@@ -1,9 +1,16 @@
-export function ellipse(
-  command: string,
-): string | { type: "ellipse"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ;strokeWidth? : number } | null {
+export function ellipse(command: string):
+  | string
+  | {
+      type: "ellipse";
+      points: [number, number][];
+      controlPoints?: [number, number][];
+      color?: string;
+      strokeWidth?: number;
+    }
+  | null {
   const parts = command.trim().split(/\s+/);
 
- if (parts.length !== 5 && parts.length !== 7 && parts.length !== 9) {
+  if (parts.length !== 5 && parts.length !== 7 && parts.length !== 9) {
     return "Syntax error: Use LIN <x1> <y1> <x2> <y2>";
   }
 
@@ -37,6 +44,7 @@ export function ellipse(
 
   // Region 1
   let p = Math.round(ry2 - rx2 * ry + 0.25 * rx2);
+
   while (px < py) {
     points.push([cx + x, cy + y]);
     points.push([cx - x, cy + y]);
@@ -83,6 +91,7 @@ export function ellipse(
       color = parts[6];
     } else if (parts[5].toUpperCase() === "BOR") {
       const width = parseFloat(parts[6]);
+
       if (isNaN(width)) {
         return "Syntax error: strokeWidth must be a number.";
       }
@@ -96,11 +105,21 @@ export function ellipse(
     }
     color = parts[6];
     const width = parseFloat(parts[8]);
+
     if (isNaN(width)) {
       return "Syntax error: strokeWidth must be a number.";
     }
     strokeWidth = width;
   }
 
-  return { type: "ellipse", points, controlPoints: [[cx, cy], [cx + rx, cy]], color, strokeWidth };
+  return {
+    type: "ellipse",
+    points,
+    controlPoints: [
+      [cx, cy],
+      [cx + rx, cy],
+    ],
+    color,
+    strokeWidth,
+  };
 }

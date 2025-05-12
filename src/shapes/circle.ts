@@ -1,6 +1,13 @@
-export function circle(
-  command: string,
-): string | { type: "circle"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ; strokeWidth? : number } | null {
+export function circle(command: string):
+  | string
+  | {
+      type: "circle";
+      points: [number, number][];
+      controlPoints?: [number, number][];
+      color?: string;
+      strokeWidth?: number;
+    }
+  | null {
   const parts = command.trim().split(/\s+/);
 
   if (parts.length !== 4 && parts.length !== 6 && parts.length !== 8) {
@@ -26,6 +33,7 @@ export function circle(
   let x = 0;
   let y = r;
   let h = 1 - r;
+
   while (x <= y) {
     points.push([x + cx, y + cy]);
     points.push([y + cx, x + cy]);
@@ -45,7 +53,6 @@ export function circle(
     }
   }
 
-  
   // Optional parsing
   let color: string | undefined;
   let strokeWidth: number | undefined;
@@ -55,6 +62,7 @@ export function circle(
       color = parts[5];
     } else if (parts[4].toUpperCase() === "BOR") {
       const width = parseFloat(parts[5]);
+
       if (isNaN(width)) {
         return "Syntax error: strokeWidth must be a number.";
       }
@@ -68,11 +76,21 @@ export function circle(
     }
     color = parts[5];
     const width = parseFloat(parts[7]);
+
     if (isNaN(width)) {
       return "Syntax error: strokeWidth must be a number.";
     }
     strokeWidth = width;
   }
 
-  return { type: "circle", points, controlPoints: [[cx, cy],[cx + r, cy]], color ,strokeWidth};
+  return {
+    type: "circle",
+    points,
+    controlPoints: [
+      [cx, cy],
+      [cx + r, cy],
+    ],
+    color,
+    strokeWidth,
+  };
 }
