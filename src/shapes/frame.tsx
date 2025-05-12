@@ -9,7 +9,14 @@ interface FrameProps {
   grid: boolean;
   setMousePos?: (pos: { x: number; y: number }) => void;
   mousePos?: { x: number; y: number };
-  shape?: "mouse" | "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
+  shape?:
+    | "mouse"
+    | "line"
+    | "rectangle"
+    | "circle"
+    | "ellipse"
+    | "bezier"
+    | "hermite";
   renderData: {
     shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
     controlPoints: { x: number; y: number }[];
@@ -18,14 +25,24 @@ interface FrameProps {
     strokeWidth?: number;
     points?: { x: number; y: number }[];
   }[];
-  setRenderData: React.Dispatch<React.SetStateAction<{
-    shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
-    controlPoints: { x: number; y: number }[];
-    color?: string;
-    isFilled?: boolean;
-    strokeWidth?: number;
-    points?: { x: number; y: number }[];
-  }[]>>;
+  setRenderData: React.Dispatch<
+    React.SetStateAction<
+      {
+        shape:
+          | "line"
+          | "rectangle"
+          | "circle"
+          | "ellipse"
+          | "bezier"
+          | "hermite";
+        controlPoints: { x: number; y: number }[];
+        color?: string;
+        isFilled?: boolean;
+        strokeWidth?: number;
+        points?: { x: number; y: number }[];
+      }[]
+    >
+  >;
   id: number | null;
   setId: React.Dispatch<React.SetStateAction<number | null>>;
 }
@@ -41,14 +58,16 @@ export default function FrameComponent({
   renderData,
   setRenderData,
   id,
-  setId
+  setId,
 }: FrameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
   const [mouseList, setMouseList] = useState<{ x: number; y: number }[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [rendering, setRendering] = useState<{ x: number; y: number }[]>([]);
-  const [mousePosHere, setMousePosHere] = useState<{ x: number; y: number } | null>(null);
+  const [mousePosHere, setMousePosHere] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   const shapeRequiredLengths: Record<string, number> = {
     mouse: 1,
@@ -64,7 +83,13 @@ export default function FrameComponent({
     setRenderData((prevRenderData) => [
       ...prevRenderData,
       {
-        shape: shape as "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite",
+        shape: shape as
+          | "line"
+          | "rectangle"
+          | "circle"
+          | "ellipse"
+          | "bezier"
+          | "hermite",
         controlPoints: mouseList,
         color: "#808080",
         isFilled: false,
@@ -102,7 +127,9 @@ export default function FrameComponent({
       const item = renderData[i];
       if (!item.points) continue;
       for (const point of item.points) {
-        const distance = Math.sqrt((clickX - point.x) ** 2 + (clickY - point.y) ** 2);
+        const distance = Math.sqrt(
+          (clickX - point.x) ** 2 + (clickY - point.y) ** 2
+        );
         if (distance <= 5) {
           setId(i);
           shapeClicked = true;
@@ -112,7 +139,7 @@ export default function FrameComponent({
     }
 
     if (!shapeClicked && shape !== "mouse") {
-      if (mouseList.length >= (shapeRequiredLengths[shape || ""])) {
+      if (mouseList.length >= shapeRequiredLengths[shape || ""]) {
         setRenderDataFunc();
         setMouseList([newClickPos]);
         setIsDrawing(false);
@@ -124,8 +151,13 @@ export default function FrameComponent({
   };
 
   useEffect(() => {
-    if (mouseList.length === (shapeRequiredLengths[shape || ""]) - 1 && shape !== "mouse") {
-      setRendering(getPreRenderPoint(shape || "", [...mouseList, mousePosHere!]));
+    if (
+      mouseList.length === shapeRequiredLengths[shape || ""] - 1 &&
+      shape !== "mouse"
+    ) {
+      setRendering(
+        getPreRenderPoint(shape || "", [...mouseList, mousePosHere!])
+      );
     }
   }, [mousePosHere]);
 
@@ -152,31 +184,40 @@ export default function FrameComponent({
     });
 
     renderData.forEach((item, index) => {
-      const points = getPreRenderPoint(item.shape, item.controlPoints);
+      let points: { x: number; y: number }[] = [];
+
+      if (item.shape === "line") {
+        points = item.controlPoints;
+      } else {
+        points = getPreRenderPoint(item.shape, item.controlPoints);
+      }
+
       if (!points.length) return;
 
-      // อัปเดต points กลับเข้า renderData
-      setRenderData((prevRenderData) =>
-        prevRenderData.map((it, idx) =>
-          idx === index ? { ...it, points } : it
-        )
-      );
+      // อัปเดต points กลับเข้า renderData (ถ้าไม่ใช่ line)
+      if (item.shape !== "line") {
+        setRenderData((prevRenderData) =>
+          prevRenderData.map((it, idx) =>
+            idx === index ? { ...it, points } : it
+          )
+        );
+      }
 
       ctx.lineWidth = item.strokeWidth || 1;
       ctx.strokeStyle = item.color || "#000000";
       ctx.fillStyle = item.color || "#000000";
 
       if (item.shape === "line") {
-        const [start, end] = points;
+        const [start, end] = item.controlPoints;
         ctx.beginPath();
         ctx.moveTo(start.x, start.y);
         ctx.lineTo(end.x, end.y);
         ctx.stroke();
       } else if (item.shape === "rectangle") {
-        const minX = Math.min(...points.map(p => p.x));
-        const maxX = Math.max(...points.map(p => p.x));
-        const minY = Math.min(...points.map(p => p.y));
-        const maxY = Math.max(...points.map(p => p.y));
+        const minX = Math.min(...points.map((p) => p.x));
+        const maxX = Math.max(...points.map((p) => p.x));
+        const minY = Math.min(...points.map((p) => p.y));
+        const maxY = Math.max(...points.map((p) => p.y));
         const w = maxX - minX;
         const h = maxY - minY;
 
@@ -199,23 +240,29 @@ export default function FrameComponent({
         }
         item.isFilled ? ctx.fill() : ctx.stroke();
       } else {
-        points.forEach(point => {
+        points.forEach((point) => {
           ctx.fillRect(point.x, point.y, 1, 1);
         });
       }
 
       if (index === id) {
-        const minX = Math.min(...points.map(p => p.x));
-        const maxX = Math.max(...points.map(p => p.x));
-        const minY = Math.min(...points.map(p => p.y));
-        const maxY = Math.max(...points.map(p => p.y));
+        const minX = Math.min(...points.map((p) => p.x));
+        const maxX = Math.max(...points.map((p) => p.x));
+        const minY = Math.min(...points.map((p) => p.y));
+        const maxY = Math.max(...points.map((p) => p.y));
         ctx.strokeStyle = "rgb(0, 119, 255)";
         ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
 
         ctx.fillStyle = "rgb(0, 119, 255)";
         item.controlPoints.forEach((point) => {
           ctx.beginPath();
-          ctx.arc(point.x - 2, point.y - 2, 0.01 * Math.min(x, y), 0, 2 * Math.PI);
+          ctx.arc(
+            point.x - 2,
+            point.y - 2,
+            0.01 * Math.min(x, y),
+            0,
+            2 * Math.PI
+          );
           ctx.fill();
           ctx.lineWidth = 4;
           ctx.strokeStyle = "rgb(129, 188, 255)";
@@ -226,7 +273,12 @@ export default function FrameComponent({
 
     rendering.forEach((item) => {
       ctx.fillStyle = "#808080";
-      ctx.fillRect(item.x, item.y, Math.ceil(0.003 * Math.min(x, y)), Math.ceil(0.003 * Math.min(x, y)));
+      ctx.fillRect(
+        item.x,
+        item.y,
+        Math.ceil(0.003 * Math.min(x, y)),
+        Math.ceil(0.003 * Math.min(x, y))
+      );
     });
   }, [x, y, bgColor, mouseList, renderData, rendering, shape, id]);
 
@@ -253,23 +305,8 @@ export default function FrameComponent({
           width: "100%",
           height: "100%",
           backgroundColor: bgColor,
-          imageRendering: "pixelated",
         }}
       />
-      {grid && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            pointerEvents: "none",
-            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px)`,
-            backgroundSize: `${Math.min(x, y) / (Math.min(x, y) / 50)}px ${Math.min(x, y) / (Math.min(x, y) / 50)}px`,
-          }}
-        />
-      )}
     </div>
   );
 }
