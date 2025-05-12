@@ -36,7 +36,7 @@ export function hermite(
     const m1: Point = { x: R2x, y: R2y };
 
     const points: [number, number][] = [];
-    const numPoints = 500;
+    const numPoints = 1000;
     for (let i = 0; i <= numPoints; i++) {
         const t = i / numPoints;
         const t2 = t * t;

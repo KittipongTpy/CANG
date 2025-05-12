@@ -2,6 +2,7 @@ import { circle } from "../shapes/circle";
 import { ellipse } from "../shapes/ellipse";
 import { line } from "../shapes/line";
 import { hermite } from "../shapes/hermite";
+import { bezier } from "../shapes/bezier"; // Update the path if necessary
 
 interface Point {
     x: number;
@@ -65,6 +66,11 @@ export function getPreRenderPoint(shape: string, pointList: Point[]): Point[] {
                 ? result.points.map((point) => ({ x: Math.ceil(point[0]), y: Math.ceil(point[1]) }))
                 : [];
         }
+    } else if (shape === "bezier") {
+        const result = bezier(`BEZ ${pointList[0].x} ${pointList[0].y} ${pointList[1].x} ${pointList[1].y} ${pointList[2].x} ${pointList[2].y} ${pointList[3].x} ${pointList[3].y}`);
+        return typeof result === "object" && result?.type === "bezier"
+            ? result.points.map((point) => ({ x: Math.ceil(point[0]), y: Math.ceil(point[1]) }))
+            : [];
     }
 
     return pointList.slice(0, requiredLength);
