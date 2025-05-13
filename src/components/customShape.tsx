@@ -100,7 +100,8 @@ export default function CustomShape({
               <span className="font-semibold">Filled:</span>
               <Switch
                 isSelected={renderData[id].isFilled}
-                onChange={(isSelected) => {
+                onChange={(e) => {
+                  const isSelected = e.target.checked;
                   const updatedData = [...renderData];
                   updatedData[id].isFilled = isSelected;
                   setRenderData(updatedData);
@@ -113,7 +114,7 @@ export default function CustomShape({
           {/* Stroke Width Slider */}
           {renderData[id].strokeWidth !== undefined && (
             <div className="mt-4">
-              <label className="font-semibold">Stroke Width:</label>
+              <p className="font-semibold">Stroke Width:</p>
               <Slider
                 className="max-w-md"
                 value={renderData[id].strokeWidth}
@@ -122,7 +123,7 @@ export default function CustomShape({
                 step={1}
                 onChange={(value) => {
                   const updatedData = [...renderData];
-                  updatedData[id].strokeWidth = value;
+                  updatedData[id].strokeWidth = Array.isArray(value) ? value[0] : value;
                   setRenderData(updatedData);
                 }}
               />
