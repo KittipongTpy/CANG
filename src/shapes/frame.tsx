@@ -343,6 +343,18 @@ export function shapeToCommand(shape: Shape): string {
       const [p1, p2] = shape.controlPoints;
       return `LIN ${round(p1.x)} ${round(p1.y)} ${round(p2.x)} ${round(p2.y)}`;
     }
+    case "bezier": {
+      const pts = shape.controlPoints.map(p => `${round(p.x)} ${round(p.y)}`);
+      return `BEZ ${pts.join(" ")}`;
+    }
+    case "hermite": {
+      const pts = shape.controlPoints.map(p => `${round(p.x)} ${round(p.y)}`);
+      return `HER ${pts.join(" ")}`;
+    }
+    case "rectangle": {
+      const [p1, p2] = shape.controlPoints;
+      return `REC ${round(p1.x)} ${round(p1.y)} ${round(p2.x)} ${round(p2.y)}`;
+    }
     default:
       return "// Unsupported shape";
   }
