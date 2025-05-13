@@ -80,7 +80,7 @@ export default function CustomShape({
           {/* Color Picker */}
           <div className="mt-4 flex items-center space-x-2">
             <label htmlFor="shape-color" className="font-semibold">
-              เลือกสี:
+              Select Color:
             </label>
             <Input
               id="shape-color"
