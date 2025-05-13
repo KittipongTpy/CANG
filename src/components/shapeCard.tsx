@@ -1,5 +1,7 @@
 import { Card, CardBody, Button } from "@heroui/react";
 import { MdEdit, MdDelete } from "react-icons/md";
+import { shapeToCommand } from "@/shapes/frame";
+
 interface Shape {
     shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
     controlPoints: { x: number; y: number }[];
@@ -13,8 +15,9 @@ interface FrameProps {
     shape: Shape;
     setShapeId: React.Dispatch<React.SetStateAction<number | null>>;
     shapeId: number | null;
+    setCode: React.Dispatch<React.SetStateAction<string>>
 }
-export default function ShapeCard({ renderData, setRenderData, shape, shapeId, setShapeId }: FrameProps) {
+export default function ShapeCard({ renderData, setRenderData, shape, shapeId, setShapeId, setCode }: FrameProps) {
 
 
     return (
@@ -36,6 +39,13 @@ export default function ShapeCard({ renderData, setRenderData, shape, shapeId, s
                         } else if (shapeId !== null && currentIndex < shapeId) {
                             setShapeId(shapeId - 1);
                         }
+                        const shapeCommand = shapeToCommand(shape);
+                        setCode(prev => {
+                            return prev
+                                .split('\n')
+                                .filter(line => line.trim() !== shapeCommand.trim())
+                                .join('\n');
+                        });
                     }}
                 >
                     <MdDelete />

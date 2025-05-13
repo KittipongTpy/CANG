@@ -205,7 +205,6 @@ export default function FrameComponent({
 
       if (!points.length) return;
 
-      // อัปเดต points กลับเข้า renderData (ถ้าไม่ใช่ line)
       if (item.shape !== "line") {
         setRenderData((prevRenderData) =>
           prevRenderData.map((it, idx) =>
@@ -245,7 +244,10 @@ export default function FrameComponent({
 
         ctx.beginPath();
         if (item.shape === "circle") {
-          ctx.arc(center.x, center.y, radiusX, 0, 2 * Math.PI);
+          const dx = edge.x - center.x;
+          const dy = edge.y - center.y;
+          const r = Math.sqrt(dx * dx + dy * dy);
+          ctx.arc(center.x, center.y, r, 0, 2 * Math.PI);
         } else {
           ctx.ellipse(center.x, center.y, radiusX, radiusY, 0, 0, 2 * Math.PI);
         }

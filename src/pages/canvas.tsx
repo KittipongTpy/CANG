@@ -96,7 +96,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    setErrorMessage(null); // Reset error message
+    setErrorMessage(null);
   }, [code]);
 
   useEffect(() => {
@@ -105,16 +105,12 @@ export default function App() {
   }, [fx, fy]);
 
   useEffect(() => {
-    if (renderData.length === 0) return;
+    const commands = renderData.map(shapeToCommand).join("\n");
+    const fullCode = `INIT ${fx} ${fy}\n${commands}`;
+    setCode(fullCode);
+  }, [renderData, fx, fy]);
 
-    const latest = renderData[renderData.length - 1];
-    const cmd = shapeToCommand(latest);
 
-    setCode((prev) => {
-      if (prev.includes(cmd)) return prev;
-      return prev.trim() + "\n" + cmd;
-    });
-  }, [renderData]);
 
   return (
     <DefaultLayout>
@@ -230,6 +226,7 @@ export default function App() {
                       shape={shape}
                       setShapeId={setShapeId}
                       shapeId={shapeId}
+                      setCode={setCode}
                     />
                   ))}
                 </CardBody>
