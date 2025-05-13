@@ -38,7 +38,9 @@ export interface Shape {
   strokeWidth?: number;
   points?: { x: number; y: number }[];
 }
+
 export default function App() {
+  const [isUserEditingCode, setIsUserEditingCode] = useState(false);
   const [code, setCode] = useState<string>("INIT 1000 1000");
   const [frame, setFrame] = useState<{ x: number; y: number } | null>(null);
   const [codeCommand, setCodeCommand] = useState<string>("");
@@ -52,6 +54,7 @@ export default function App() {
   const [shapeId, setShapeId] = useState<number | null>(null);
 
   const handleRun = () => {
+    setIsUserEditingCode(false);
     setErrorMessage(null); // Reset error message
     if (!code.trim()) {
       setErrorMessage("No command provided.");
@@ -105,12 +108,12 @@ export default function App() {
   }, [fx, fy]);
 
   useEffect(() => {
+    if (isUserEditingCode) return;
+
     const commands = renderData.map(shapeToCommand).join("\n");
     const fullCode = `INIT ${fx} ${fy}\n${commands}`;
     setCode(fullCode);
-  }, [renderData, fx, fy]);
-
-
+  }, [renderData, fx, fy,isUserEditingCode]);
 
   return (
     <DefaultLayout>
@@ -248,7 +251,10 @@ export default function App() {
                     value={code}
                     height="100%"
                     theme={vscodeDark}
-                    onChange={(value: string) => setCode(value)}
+                    onChange={(value: string) => {
+                      setIsUserEditingCode(true);
+                      setCode(value);
+                    }}
                   />
                 </CardBody>
                 <CardFooter className="bg-white/10 bottom-0 border-t-10 flex justify-between">

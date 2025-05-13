@@ -10,6 +10,7 @@ export function hermite(
     | {
         type: "hermite";
         points: [number, number][];
+        controlPoints?: [number, number][]
         color?: string;
         strokeWidth?: number;
     }
@@ -80,5 +81,17 @@ export function hermite(
         strokeWidth = width;
     }
 
-    return { type: "hermite", points, color, strokeWidth };
+    return {
+        type: "hermite",
+        points,
+        controlPoints: [
+            [x0, y0],
+            [R1x, R1y],
+            [R2x, R2y],
+            [x1, y1],
+        ],
+        color,
+        strokeWidth,
+    };
+
 }

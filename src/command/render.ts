@@ -1,11 +1,17 @@
 import { circle } from "../shapes/circle";
 import { ellipse } from "../shapes/ellipse";
 import { line } from "../shapes/line";
+import { bezier } from "@/shapes/bezier";
+import { hermite } from "@/shapes/hermite";
+import { rectangle } from "../shapes/rectangle";
 
 export type DrawData =
   | { type: "circle"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ; strokeWidth?: number }
   | { type: "ellipse"; points: [number, number][]; controlPoints?: [number, number][];color?: string ; strokeWidth?: number }
-  | { type: "line"; points: [number, number][]; controlPoints?: [number, number][];color?: string ; strokeWidth?: number };
+  | { type: "line"; points: [number, number][]; controlPoints?: [number, number][];color?: string ; strokeWidth?: number }
+  | { type: "rectangle"; points: [number, number][]; controlPoints?: [number, number][]; color?: string; strokeWidth?: number }
+  | { type: "bezier"; points: [number, number][]; controlPoints?: [number, number][]; color?: string; strokeWidth?: number }
+  | { type: "hermite"; points: [number, number][]; controlPoints?: [number, number][]; color?: string; strokeWidth?: number };
 const commandRegistry: Record<
   string,
   (command: string) => string | null | DrawData
@@ -13,6 +19,9 @@ const commandRegistry: Record<
   CIR: circle,
   ELI: ellipse,
   LIN: line,
+  REC: rectangle,
+  BEZ: bezier,
+  HER: hermite,
 };
 
 export function executeCommand(input: string): {

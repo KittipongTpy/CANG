@@ -3,6 +3,7 @@ export function bezier(command: string):
     | {
         type: "bezier";
         points: [number, number][];
+        controlPoints?: [number, number][]
         color?: string;
         strokeWidth?: number;
       }
@@ -74,6 +75,12 @@ export function bezier(command: string):
       type: "bezier",
       points,
       color,
+      controlPoints: [
+        [x0, y0],
+        [x1, y1],
+        [x2, y2],
+        [x3, y3],
+      ],
       strokeWidth,
     };
   }
