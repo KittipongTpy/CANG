@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { getPreRenderPoint } from "../preRender/preRender";
-import { render } from "react-dom";
-import { it } from "node:test";
 import type { Shape } from "../pages/canvas";
 
 interface FrameProps {
@@ -12,14 +10,7 @@ interface FrameProps {
   grid: boolean;
   setMousePos?: (pos: { x: number; y: number }) => void;
   mousePos?: { x: number; y: number };
-  shape?:
-    | "mouse"
-    | "line"
-    | "rectangle"
-    | "circle"
-    | "ellipse"
-    | "bezier"
-    | "hermite";
+  shape?: "mouse" | "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
   renderData: {
     shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
     controlPoints: { x: number; y: number }[];
@@ -31,13 +22,7 @@ interface FrameProps {
   setRenderData: React.Dispatch<
     React.SetStateAction<
       {
-        shape:
-          | "line"
-          | "rectangle"
-          | "circle"
-          | "ellipse"
-          | "bezier"
-          | "hermite";
+        shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
         controlPoints: { x: number; y: number }[];
         color?: string;
         isFilled?: boolean;
@@ -67,10 +52,7 @@ export default function FrameComponent({
   const [mouseList, setMouseList] = useState<{ x: number; y: number }[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [rendering, setRendering] = useState<{ x: number; y: number }[]>([]);
-  const [mousePosHere, setMousePosHere] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  const [mousePosHere, setMousePosHere] = useState<{ x: number; y: number } | null>(null);
 
   const shapeRequiredLengths: Record<string, number> = {
     mouse: 1,
@@ -94,14 +76,13 @@ export default function FrameComponent({
           | "bezier"
           | "hermite",
         controlPoints: mouseList,
+
         color: "#808080",
         isFilled: false,
         strokeWidth: 1,
       },
     ]);
-    if (setId) {
-      setId(renderData.length);
-    }
+    if (setId) setId(renderData.length);
     setRendering([]);
   };
 
@@ -117,7 +98,6 @@ export default function FrameComponent({
   const handleMouseClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const rect = canvas.getBoundingClientRect();
     const clickX = ((e.clientX - rect.left) / rect.width) * x;
     const clickY = ((e.clientY - rect.top) / rect.height) * y;
@@ -125,14 +105,11 @@ export default function FrameComponent({
     setMousePosHere(newClickPos);
 
     let shapeClicked = false;
-
     for (let i = renderData.length - 1; i >= 0; i--) {
       const item = renderData[i];
       if (!item.points) continue;
       for (const point of item.points) {
-        const distance = Math.sqrt(
-          (clickX - point.x) ** 2 + (clickY - point.y) ** 2
-        );
+        const distance = Math.sqrt((clickX - point.x) ** 2 + (clickY - point.y) ** 2);
         if (distance <= 5) {
           setId(i);
           shapeClicked = true;
@@ -147,20 +124,15 @@ export default function FrameComponent({
         setMouseList([newClickPos]);
         setIsDrawing(false);
       } else {
-        setMouseList((prevMouseList) => [...prevMouseList, newClickPos]);
+        setMouseList((prev) => [...prev, newClickPos]);
         setIsDrawing(true);
       }
     }
   };
 
   useEffect(() => {
-    if (
-      mouseList.length === shapeRequiredLengths[shape || ""] - 1 &&
-      shape !== "mouse"
-    ) {
-      setRendering(
-        getPreRenderPoint(shape || "", [...mouseList, mousePosHere!])
-      );
+    if (mouseList.length === shapeRequiredLengths[shape || ""] - 1 && shape !== "mouse") {
+      setRendering(getPreRenderPoint(shape || "", [...mouseList, mousePosHere!]));
     }
   }, [mousePosHere]);
 
@@ -175,6 +147,25 @@ export default function FrameComponent({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // ✅ Draw Grid
+    if (grid) {
+      const spacing = 20;
+      ctx.strokeStyle = "#e0e0e0";
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= canvas.width; i += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+      }
+      for (let j = 0; j <= canvas.height; j += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(0, j);
+        ctx.lineTo(canvas.width, j);
+        ctx.stroke();
+      }
+    }
 
     mouseList.forEach((point) => {
       ctx.beginPath();
@@ -198,10 +189,8 @@ export default function FrameComponent({
       if (!points.length) return;
 
       if (item.shape !== "line") {
-        setRenderData((prevRenderData) =>
-          prevRenderData.map((it, idx) =>
-            idx === index ? { ...it, points } : it
-          )
+        setRenderData((prev) =>
+          prev.map((it, idx) => (idx === index ? { ...it, points } : it))
         );
       }
 
@@ -222,12 +211,7 @@ export default function FrameComponent({
         const maxY = Math.max(...points.map((p) => p.y));
         const w = maxX - minX;
         const h = maxY - minY;
-
-        if (item.isFilled) {
-          ctx.fillRect(minX, minY, w, h);
-        } else {
-          ctx.strokeRect(minX, minY, w, h);
-        }
+        item.isFilled ? ctx.fillRect(minX, minY, w, h) : ctx.strokeRect(minX, minY, w, h);
       } else if (item.shape === "circle" || item.shape === "ellipse") {
         const center = item.controlPoints[0];
         const edge = item.controlPoints[1];
@@ -236,18 +220,14 @@ export default function FrameComponent({
 
         ctx.beginPath();
         if (item.shape === "circle") {
-          const dx = edge.x - center.x;
-          const dy = edge.y - center.y;
-          const r = Math.sqrt(dx * dx + dy * dy);
+          const r = Math.sqrt((edge.x - center.x) ** 2 + (edge.y - center.y) ** 2);
           ctx.arc(center.x, center.y, r, 0, 2 * Math.PI);
         } else {
           ctx.ellipse(center.x, center.y, radiusX, radiusY, 0, 0, 2 * Math.PI);
         }
         item.isFilled ? ctx.fill() : ctx.stroke();
       } else {
-        points.forEach((point) => {
-          ctx.fillRect(point.x, point.y, 1, 1);
-        });
+        points.forEach((point) => ctx.fillRect(point.x, point.y, 1, 1));
       }
 
       if (index === id) {
@@ -261,13 +241,7 @@ export default function FrameComponent({
         ctx.fillStyle = "rgb(0, 119, 255)";
         item.controlPoints.forEach((point) => {
           ctx.beginPath();
-          ctx.arc(
-            point.x - 2,
-            point.y - 2,
-            0.01 * Math.min(x, y),
-            0,
-            2 * Math.PI
-          );
+          ctx.arc(point.x - 2, point.y - 2, 0.01 * Math.min(x, y), 0, 2 * Math.PI);
           ctx.fill();
           ctx.lineWidth = 4;
           ctx.strokeStyle = "rgb(129, 188, 255)";
@@ -285,14 +259,11 @@ export default function FrameComponent({
         Math.ceil(0.003 * Math.min(x, y))
       );
     });
-  }, [x, y, bgColor, mouseList, renderData, rendering, shape, id]);
+  }, [x, y, bgColor, mouseList, renderData, rendering, shape, id, grid]);
 
   return (
     <div
-      style={{
-        aspectRatio: `${x} / ${y}`,
-        position: "relative",
-      }}
+      style={{ aspectRatio: `${x} / ${y}`, position: "relative" }}
       onMouseMove={(e) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -306,11 +277,7 @@ export default function FrameComponent({
     >
       <canvas
         ref={canvasRef}
-        style={{
-          width: "100%",
-          height: "100%",
-          backgroundColor: bgColor,
-        }}
+        style={{ width: "100%", height: "100%", backgroundColor: bgColor }}
       />
     </div>
   );
@@ -335,13 +302,10 @@ export function shapeToCommand(shape: Shape): string {
       const [p1, p2] = shape.controlPoints;
       return `LIN ${round(p1.x)} ${round(p1.y)} ${round(p2.x)} ${round(p2.y)}`;
     }
-    case "bezier": {
-      const pts = shape.controlPoints.map(p => `${round(p.x)} ${round(p.y)}`);
-      return `BEZ ${pts.join(" ")}`;
-    }
+    case "bezier":
     case "hermite": {
       const pts = shape.controlPoints.map(p => `${round(p.x)} ${round(p.y)}`);
-      return `HER ${pts.join(" ")}`;
+      return `${shape.shape === "bezier" ? "BEZ" : "HER"} ${pts.join(" ")}`;
     }
     case "rectangle": {
       const [p1, p2] = shape.controlPoints;
