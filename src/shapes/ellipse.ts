@@ -102,5 +102,5 @@ export function ellipse(
     strokeWidth = width;
   }
 
-  return { type: "ellipse", points, controlPoints: [[cx, cy], [cx + rx, cy]], color, strokeWidth };
+  return { type: "ellipse", points, controlPoints: [[cx, cy], [cx + rx, cy + ry]], color, strokeWidth };
 }
