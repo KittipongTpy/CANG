@@ -226,10 +226,17 @@ export default function FrameComponent({
           ctx.ellipse(center.x, center.y, radiusX, radiusY, 0, 0, 2 * Math.PI);
         }
         item.isFilled ? ctx.fill() : ctx.stroke();
-      } else {
-        points.forEach((point) => ctx.fillRect(point.x, point.y, 1, 1));
+      } else if (item.shape === "bezier" || item.shape === "hermite") {
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i += 2) {
+          const cp1 = points[i];
+          const cp2 = points[i + 1];
+          const end = points[i + 2] || points[points.length - 1];
+          ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
+        }
+        ctx.stroke();
       }
-
       if (index === id) {
         const minX = Math.min(...points.map((p) => p.x));
         const maxX = Math.max(...points.map((p) => p.x));
