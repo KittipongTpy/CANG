@@ -14,3 +14,10 @@
   .custom-dragger-horizontal {
     display: none;
   }
+
+
+
+.highlight-line {
+  background-color:#370C14; /* Light yellow background */
+  color: #ff69b4; /* Orange text color */
+}
