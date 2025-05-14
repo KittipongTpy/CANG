@@ -27,7 +27,7 @@ import FrameComponent from "@/shapes/frame";
 import { init } from "@/shapes/init";
 import DefaultLayout from "@/layouts/default";
 import { executeCommand } from "@/command/render";
-import { shapeToCommand } from "@/shapes/frame"
+import { shapeToCommand } from "@/shapes/shapeToCommand";
 import ShapeCard from "@/components/shapeCard";
 import CustomShape from "@/components/customShape";
 export interface Shape {

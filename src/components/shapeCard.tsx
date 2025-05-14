@@ -1,6 +1,6 @@
 import { Card, CardBody, Button } from "@heroui/react";
 import { MdEdit, MdDelete } from "react-icons/md";
-import { shapeToCommand } from "@/shapes/frame";
+import { shapeToCommand } from "@/shapes/shapeToCommand";
 
 interface Shape {
     shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
