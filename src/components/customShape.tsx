@@ -18,12 +18,14 @@ interface FrameProps {
     strokeWidth?: number;
   }[];
   id: number;
+  setId: React.Dispatch<React.SetStateAction<number | null>>;
   setRenderData: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 export default function CustomShape({
   renderData,
   id,
+  setId,
   setRenderData,
 }: FrameProps) {
   return (
@@ -144,9 +146,8 @@ export default function CustomShape({
                 );
                 setRenderData(updatedData);
                 if (id !== null) {
-                  if (id >= renderData.length - 1) {
-                    setRenderData(updatedData);
-                  }
+                  setRenderData(updatedData);
+                  setId(null);
                 }
               }}
             >
