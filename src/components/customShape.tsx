@@ -123,7 +123,9 @@ export default function CustomShape({
                 step={1}
                 onChange={(value) => {
                   const updatedData = [...renderData];
-                  updatedData[id].strokeWidth = Array.isArray(value) ? value[0] : value;
+                  updatedData[id].strokeWidth = Array.isArray(value)
+                    ? value[0]
+                    : value;
                   setRenderData(updatedData);
                 }}
               />
@@ -133,7 +135,21 @@ export default function CustomShape({
 
         <CardFooter>
           <div className="flex justify-between w-full">
-            <Button color="danger" aria-label="Delete shape">
+            <Button
+              color="danger"
+              aria-label="Delete shape"
+              onPress={() => {
+                const updatedData = renderData.filter(
+                  (_, index) => index !== id
+                );
+                setRenderData(updatedData);
+                if (id !== null) {
+                  if (id >= renderData.length - 1) {
+                    setRenderData(updatedData);
+                  }
+                }
+              }}
+            >
               <MdDelete />
               Delete
             </Button>
