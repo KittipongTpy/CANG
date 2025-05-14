@@ -129,7 +129,25 @@ export default function FrameComponent({
     let shapeClicked = false;
     for (let i = renderData.length - 1; i >= 0; i--) {
       const item = renderData[i];
-      if (!item.points) continue;
+      if (item.shape === "line" && item.controlPoints.length === 2) {
+      const [start, end] = item.controlPoints;
+
+        const distance =
+        Math.abs(
+          (end.y - start.y) * clickX -
+          (end.x - start.x) * clickY +
+          end.x * start.y -
+          end.y * start.x
+        ) /
+        Math.sqrt((end.y - start.y) ** 2 + (end.x - start.x) ** 2);
+
+        if (distance <= 5) {
+          setId(i);
+          shapeClicked = true;
+          break;
+        }
+      }
+       if (item.points) {
       for (const point of item.points) {
         const distance = Math.sqrt(
           (clickX - point.x) ** 2 + (clickY - point.y) ** 2
@@ -141,6 +159,7 @@ export default function FrameComponent({
         }
       }
     }
+  } 
 
     if (!shapeClicked && shape !== "mouse") {
       if (mouseList.length >= shapeRequiredLengths[shape || ""]) {
