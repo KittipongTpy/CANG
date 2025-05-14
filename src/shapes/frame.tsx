@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { getPreRenderPoint } from "../preRender/preRender";
-import type { Shape } from "../pages/canvas";
+import {
+  handleMouseDown,
+  handleMouseMove,
+  handleMouseUp,
+} from "../shapeConfiguration/dragHandler";
 
 interface FrameProps {
   x: number;
@@ -10,7 +14,14 @@ interface FrameProps {
   grid: boolean;
   setMousePos?: (pos: { x: number; y: number }) => void;
   mousePos?: { x: number; y: number };
-  shape?: "mouse" | "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
+  shape?:
+    | "mouse"
+    | "line"
+    | "rectangle"
+    | "circle"
+    | "ellipse"
+    | "bezier"
+    | "hermite";
   renderData: {
     shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
     controlPoints: { x: number; y: number }[];
@@ -22,7 +33,13 @@ interface FrameProps {
   setRenderData: React.Dispatch<
     React.SetStateAction<
       {
-        shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
+        shape:
+          | "line"
+          | "rectangle"
+          | "circle"
+          | "ellipse"
+          | "bezier"
+          | "hermite";
         controlPoints: { x: number; y: number }[];
         color?: string;
         isFilled?: boolean;
@@ -39,7 +56,6 @@ export default function FrameComponent({
   x,
   y,
   bgColor,
-  drawData,
   grid,
   setMousePos,
   shape,
@@ -52,7 +68,13 @@ export default function FrameComponent({
   const [mouseList, setMouseList] = useState<{ x: number; y: number }[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [rendering, setRendering] = useState<{ x: number; y: number }[]>([]);
-  const [mousePosHere, setMousePosHere] = useState<{ x: number; y: number } | null>(null);
+  const [mousePosHere, setMousePosHere] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [draggingPointIndex, setDraggingPointIndex] = useState<number | null>(null);
+  const [startMousePos, setStartMousePos] = useState<{ x: number; y: number } | null>(null);
 
   const shapeRequiredLengths: Record<string, number> = {
     mouse: 1,
@@ -109,7 +131,9 @@ export default function FrameComponent({
       const item = renderData[i];
       if (!item.points) continue;
       for (const point of item.points) {
-        const distance = Math.sqrt((clickX - point.x) ** 2 + (clickY - point.y) ** 2);
+        const distance = Math.sqrt(
+          (clickX - point.x) ** 2 + (clickY - point.y) ** 2
+        );
         if (distance <= 5) {
           setId(i);
           shapeClicked = true;
@@ -131,8 +155,13 @@ export default function FrameComponent({
   };
 
   useEffect(() => {
-    if (mouseList.length === shapeRequiredLengths[shape || ""] - 1 && shape !== "mouse") {
-      setRendering(getPreRenderPoint(shape || "", [...mouseList, mousePosHere!]));
+    if (
+      mouseList.length === shapeRequiredLengths[shape || ""] - 1 &&
+      shape !== "mouse"
+    ) {
+      setRendering(
+        getPreRenderPoint(shape || "", [...mouseList, mousePosHere!])
+      );
     }
   }, [mousePosHere]);
 
@@ -211,7 +240,9 @@ export default function FrameComponent({
         const maxY = Math.max(...points.map((p) => p.y));
         const w = maxX - minX;
         const h = maxY - minY;
-        item.isFilled ? ctx.fillRect(minX, minY, w, h) : ctx.strokeRect(minX, minY, w, h);
+        item.isFilled
+          ? ctx.fillRect(minX, minY, w, h)
+          : ctx.strokeRect(minX, minY, w, h);
       } else if (item.shape === "circle" || item.shape === "ellipse") {
         const center = item.controlPoints[0];
         const edge = item.controlPoints[1];
@@ -220,7 +251,9 @@ export default function FrameComponent({
 
         ctx.beginPath();
         if (item.shape === "circle") {
-          const r = Math.sqrt((edge.x - center.x) ** 2 + (edge.y - center.y) ** 2);
+          const r = Math.sqrt(
+            (edge.x - center.x) ** 2 + (edge.y - center.y) ** 2
+          );
           ctx.arc(center.x, center.y, r, 0, 2 * Math.PI);
         } else {
           ctx.ellipse(center.x, center.y, radiusX, radiusY, 0, 0, 2 * Math.PI);
@@ -241,7 +274,13 @@ export default function FrameComponent({
         ctx.fillStyle = "rgb(0, 119, 255)";
         item.controlPoints.forEach((point) => {
           ctx.beginPath();
-          ctx.arc(point.x - 2, point.y - 2, 0.01 * Math.min(x, y), 0, 2 * Math.PI);
+          ctx.arc(
+            point.x - 2,
+            point.y - 2,
+            0.01 * Math.min(x, y),
+            0,
+            2 * Math.PI
+          );
           ctx.fill();
           ctx.lineWidth = 4;
           ctx.strokeStyle = "rgb(129, 188, 255)";
@@ -262,56 +301,55 @@ export default function FrameComponent({
   }, [x, y, bgColor, mouseList, renderData, rendering, shape, id, grid]);
 
   return (
-    <div
-      style={{ aspectRatio: `${x} / ${y}`, position: "relative" }}
-      onMouseMove={(e) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = ((e.clientX - rect.left) / rect.width) * x;
-        const mouseY = ((e.clientY - rect.top) / rect.height) * y;
-        setMousePos?.({ x: mouseX, y: mouseY });
-        setMousePosHere({ x: mouseX, y: mouseY });
-      }}
-      onClick={handleMouseClick}
-    >
-      <canvas
-        ref={canvasRef}
-        style={{ width: "100%", height: "100%", backgroundColor: bgColor }}
-      />
-    </div>
-  );
-}
+  <div
+    style={{ aspectRatio: `${x} / ${y}`, position: "relative" }}
+    onMouseDown={(e) =>
+      handleMouseDown(
+        e,
+        canvasRef,
+        x,
+        y,
+        renderData,
+        setDraggingPointIndex,
+        setStartMousePos,
+        setDragging,
+        setId,
+        id
+      )
+    }
+    onMouseMove={(e) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-export function shapeToCommand(shape: Shape): string {
-  const round = (n: number) => Math.round(n);
+      // Handle dragging
+      handleMouseMove(
+        e,
+        canvasRef,
+        x,
+        y,
+        dragging,
+        startMousePos,
+        renderData,
+        setRenderData,
+        draggingPointIndex,
+        id,
+        setStartMousePos
+      );
 
-  switch (shape.shape) {
-    case "circle": {
-      const [center, edge] = shape.controlPoints;
-      const r = Math.round(Math.hypot(edge.x - center.x, edge.y - center.y));
-      return `CIR ${round(center.x)} ${round(center.y)} ${r}`;
-    }
-    case "ellipse": {
-      const [center, edge] = shape.controlPoints;
-      const rx = round(Math.abs(edge.x - center.x));
-      const ry = round(Math.abs(edge.y - center.y));
-      return `ELI ${round(center.x)} ${round(center.y)} ${rx} ${ry}`;
-    }
-    case "line": {
-      const [p1, p2] = shape.controlPoints;
-      return `LIN ${round(p1.x)} ${round(p1.y)} ${round(p2.x)} ${round(p2.y)}`;
-    }
-    case "bezier":
-    case "hermite": {
-      const pts = shape.controlPoints.map(p => `${round(p.x)} ${round(p.y)}`);
-      return `${shape.shape === "bezier" ? "BEZ" : "HER"} ${pts.join(" ")}`;
-    }
-    case "rectangle": {
-      const [p1, p2] = shape.controlPoints;
-      return `REC ${round(p1.x)} ${round(p1.y)} ${round(p2.x)} ${round(p2.y)}`;
-    }
-    default:
-      return "// Unsupported shape";
-  }
+      // Update mouse position
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = ((e.clientX - rect.left) / rect.width) * x;
+      const mouseY = ((e.clientY - rect.top) / rect.height) * y;
+      setMousePos?.({ x: mouseX, y: mouseY });
+      setMousePosHere({ x: mouseX, y: mouseY });
+    }}
+    onMouseUp={() => handleMouseUp(setDragging, setDraggingPointIndex, setStartMousePos)}
+    onClick={handleMouseClick}
+  >
+    <canvas
+      ref={canvasRef}
+      style={{ width: "100%", height: "100%", backgroundColor: bgColor }}
+    />
+  </div>
+);
 }
