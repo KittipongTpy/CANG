@@ -286,6 +286,7 @@ export default function App() {
                       renderData={renderData}
                       setRenderData={setRenderData}
                       id={shapeId}
+                      setId={setShapeId}
                     />
                   )}
                 </CardHeader>
