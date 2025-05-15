@@ -10,8 +10,8 @@ export type DrawData =
   | { type: "ellipse"; points: [number, number][]; controlPoints?: [number, number][];color?: string ; strokeWidth?: number ;isFilled?: boolean}
   | { type: "line"; points: [number, number][]; controlPoints?: [number, number][];color?: string ; strokeWidth?: number ;isFilled?: boolean}
   | { type: "rectangle"; points: [number, number][]; controlPoints?: [number, number][]; color?: string; strokeWidth?: number ;isFilled?: boolean}
-  | { type: "bezier"; points: [number, number][]; controlPoints?: [number, number][]; color?: string; strokeWidth?: number}
-  | { type: "hermite"; points: [number, number][]; controlPoints?: [number, number][]; color?: string; strokeWidth?: number};
+  | { type: "bezier"; points: [number, number][]; controlPoints?: [number, number][]; color?: string; strokeWidth?: number;isFilled?: boolean}
+  | { type: "hermite"; points: [number, number][]; controlPoints?: [number, number][]; color?: string; strokeWidth?: number;isFilled?: boolean};
 const commandRegistry: Record<
   string,
   (command: string) => string | null | DrawData
