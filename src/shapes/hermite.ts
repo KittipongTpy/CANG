@@ -13,6 +13,7 @@ export function hermite(
         controlPoints?: [number, number][]
         color?: string;
         strokeWidth?: number;
+        isFilled?: boolean;
     }
     | null {
     const parts = command.trim().split(/\s+/);
@@ -55,11 +56,13 @@ export function hermite(
 
     let color: string | undefined;
     let strokeWidth: number | undefined;
+    let isFilled: boolean | undefined;
 
     if (parts.length === 11) {
         const key = parts[9].toUpperCase();
         if (key === "FIL") {
             color = parts[10];
+            isFilled = true;
         } else if (key === "BOR") {
             const width = parseFloat(parts[10]);
             if (isNaN(width)) {
@@ -74,6 +77,7 @@ export function hermite(
             return "Syntax error: Expected 'FIL <color> BOR <width>' in that order.";
         }
         color = parts[10];
+        isFilled = true;
         const width = parseFloat(parts[12]);
         if (isNaN(width)) {
             return "Syntax error: strokeWidth must be a number.";
@@ -92,6 +96,7 @@ export function hermite(
         ],
         color,
         strokeWidth,
+        isFilled,
     };
 
 }

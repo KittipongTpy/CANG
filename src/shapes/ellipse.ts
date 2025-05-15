@@ -1,6 +1,6 @@
 export function ellipse(
   command: string,
-): string | { type: "ellipse"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ;strokeWidth? : number } | null {
+): string | { type: "ellipse"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ;strokeWidth? : number ; isFilled?: boolean;} | null {
   const parts = command.trim().split(/\s+/);
 
  if (parts.length !== 5 && parts.length !== 7 && parts.length !== 9) {
@@ -75,12 +75,14 @@ export function ellipse(
 
   let color: string | undefined;
   let strokeWidth: number | undefined;
+  let isFilled: boolean | undefined;
 
   if (parts.length === 5) {
     // ไม่มี FIL หรือ STR (ถูกต้อง)
   } else if (parts.length === 7) {
     if (parts[5].toUpperCase() === "FIL") {
       color = parts[6];
+      isFilled = true;
     } else if (parts[5].toUpperCase() === "BOR") {
       const width = parseFloat(parts[6]);
       if (isNaN(width)) {
@@ -95,6 +97,7 @@ export function ellipse(
       return "Syntax error: Expected 'FIL <color> BOR <width>' in that order.";
     }
     color = parts[6];
+    isFilled = true;
     const width = parseFloat(parts[8]);
     if (isNaN(width)) {
       return "Syntax error: strokeWidth must be a number.";
@@ -102,5 +105,5 @@ export function ellipse(
     strokeWidth = width;
   }
 
-  return { type: "ellipse", points, controlPoints: [[cx, cy], [cx + rx, cy + ry]], color, strokeWidth };
+  return { type: "ellipse", points, controlPoints: [[cx, cy], [cx + rx, cy + ry]], color, strokeWidth, isFilled };
 }
