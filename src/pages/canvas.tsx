@@ -44,6 +44,7 @@ export interface Shape {
 
 export default function App() {
   const [isUserEditingCode, setIsUserEditingCode] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [code, setCode] = useState<string>("INIT 1000 1000");
   const [frame, setFrame] = useState<{ x: number; y: number } | null>(null);
   const [codeCommand, setCodeCommand] = useState<string>("");
@@ -87,13 +88,15 @@ export default function App() {
 
     if (errors.length > 0 && errors[0] !== " ") {
       setErrorMessage(errors.join(", "));
+      setHasError(true);
+      return;
     }
+    setHasError(false);
     setFx(initFrame.width);
     setFy(initFrame.height);
     setFrame({ x: initFrame.width, y: initFrame.height });
     setCodeCommand(restCommand);
-    const convertedShapes: Shape[] = drawData.map((item) => {
-      return {
+    const convertedShapes: Shape[] = drawData.map((item) => ({
         shape: item.type,
         controlPoints: (item.controlPoints ?? item.points.slice(0, 2)).map(
           ([x, y]) => ({ x, y })
@@ -102,23 +105,17 @@ export default function App() {
         isFilled: item.isFilled ?? false,
         strokeWidth: item.strokeWidth ?? 1,
         points: item.points.map(([x, y]) => ({ x, y })),
-      };
-    });
+    }));
     setRenderData(convertedShapes);
     setShapeId(0);
   };
-
-  useEffect(() => {
-    setErrorMessage(null);
-  }, [code]);
 
   useEffect(() => {
     setFrame({ x: fx, y: fy });
   }, [fx, fy]);
 
   useEffect(() => {
-    if (isUserEditingCode) return;
-
+    if (isUserEditingCode || hasError) return;
     const commands = renderData.map(shapeToCommand).join("\n");
     const fullCode = `INIT ${fx} ${fy}\n${commands}`;
     setCode(fullCode);
