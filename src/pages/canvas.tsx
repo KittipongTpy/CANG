@@ -125,19 +125,22 @@ export default function App() {
   }, [renderData, fx, fy, isUserEditingCode]);
 
   function highlightLines(lineIndexes: number[]) {
-    return EditorView.decorations.compute([], (state) => {
-      const builder = new RangeSetBuilder<Decoration>();
-      lineIndexes.forEach((lineIndex) => {
-        const line = state.doc.line(lineIndex + 1); // Line numbers are 1-based
+  return EditorView.decorations.compute([], (state) => {
+    const builder = new RangeSetBuilder<Decoration>();
+    const lineCount = state.doc.lines;
+    lineIndexes.forEach((lineIndex) => {
+      if (lineIndex + 1 <= lineCount) { // Only highlight if line exists
+        const line = state.doc.line(lineIndex + 1);
         builder.add(
           line.from,
-          line.from, // Add decoration to the start of the line
+          line.from,
           Decoration.line({ class: "highlight-line" })
         );
-      });
-      return builder.finish();
+      }
     });
-  }
+    return builder.finish();
+  });
+}
 
   return (
     <DefaultLayout>
