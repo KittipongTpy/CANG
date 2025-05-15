@@ -5,8 +5,12 @@ export function shapeToCommand(shape: Shape): string {
 
   const appendStyle = () => {
     let result = "";
-    if (shape.isFilled && shape.color) result += ` FIL ${shape.color}`;
-    if (shape.strokeWidth) result += ` BOR ${shape.strokeWidth}`;
+    if (shape.color && (shape.isFilled || shape.shape === "hermite" || shape.shape === "bezier")) {
+      result += ` FIL ${shape.color}`;
+    }
+    if (shape.strokeWidth) {
+      result += ` BOR ${shape.strokeWidth}`;
+    }
     return result;
   };
 

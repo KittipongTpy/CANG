@@ -48,13 +48,11 @@ export function bezier(command: string):
   
     let color: string | undefined;
     let strokeWidth: number | undefined;
-    let isFilled: boolean | undefined;
   
     if (parts.length === 11) {
       const key = parts[9].toUpperCase();
       if (key === "FIL") {
         color = parts[10];
-        isFilled = true;
       } else if (key === "BOR") {
         strokeWidth = parseFloat(parts[10]);
         if (isNaN(strokeWidth)) {
@@ -68,7 +66,6 @@ export function bezier(command: string):
         return "Syntax error: Expected 'FIL <color> BOR <width>' in that order.";
       }
       color = parts[10];
-      isFilled = true;
       strokeWidth = parseFloat(parts[12]);
       if (isNaN(strokeWidth)) {
         return "Syntax error: strokeWidth must be a number.";
@@ -86,7 +83,6 @@ export function bezier(command: string):
         [x3, y3],
       ],
       strokeWidth,
-      isFilled,
     };
   }
   
