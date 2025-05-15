@@ -99,7 +99,7 @@ export default function App() {
           ([x, y]) => ({ x, y })
         ),
         color: item.color ?? "#808080",
-        isFilled: false,
+        isFilled: item.isFilled ?? false,
         strokeWidth: item.strokeWidth ?? 1,
         points: item.points.map(([x, y]) => ({ x, y })),
       };
