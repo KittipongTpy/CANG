@@ -73,8 +73,13 @@ export default function FrameComponent({
     y: number;
   } | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [draggingPointIndex, setDraggingPointIndex] = useState<number | null>(null);
-  const [startMousePos, setStartMousePos] = useState<{ x: number; y: number } | null>(null);
+  const [draggingPointIndex, setDraggingPointIndex] = useState<number | null>(
+    null
+  );
+  const [startMousePos, setStartMousePos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   const shapeRequiredLengths: Record<string, number> = {
     mouse: 1,
@@ -130,16 +135,15 @@ export default function FrameComponent({
     for (let i = renderData.length - 1; i >= 0; i--) {
       const item = renderData[i];
       if (item.shape === "line" && item.controlPoints.length === 2) {
-      const [start, end] = item.controlPoints;
+        const [start, end] = item.controlPoints;
 
         const distance =
-        Math.abs(
-          (end.y - start.y) * clickX -
-          (end.x - start.x) * clickY +
-          end.x * start.y -
-          end.y * start.x
-        ) /
-        Math.sqrt((end.y - start.y) ** 2 + (end.x - start.x) ** 2);
+          Math.abs(
+            (end.y - start.y) * clickX -
+              (end.x - start.x) * clickY +
+              end.x * start.y -
+              end.y * start.x
+          ) / Math.sqrt((end.y - start.y) ** 2 + (end.x - start.x) ** 2);
 
         if (distance <= 5) {
           setId(i);
@@ -147,19 +151,19 @@ export default function FrameComponent({
           break;
         }
       }
-       if (item.points) {
-      for (const point of item.points) {
-        const distance = Math.sqrt(
-          (clickX - point.x) ** 2 + (clickY - point.y) ** 2
-        );
-        if (distance <= 5) {
-          setId(i);
-          shapeClicked = true;
-          break;
+      if (item.points) {
+        for (const point of item.points) {
+          const distance = Math.sqrt(
+            (clickX - point.x) ** 2 + (clickY - point.y) ** 2
+          );
+          if (distance <= 5) {
+            setId(i);
+            shapeClicked = true;
+            break;
+          }
         }
       }
     }
-  } 
 
     if (!shapeClicked && shape !== "mouse") {
       if (mouseList.length >= shapeRequiredLengths[shape || ""]) {
@@ -290,29 +294,51 @@ export default function FrameComponent({
         ctx.stroke();
       }
       if (index === id) {
-        const minX = Math.min(...points.map((p) => p.x));
-        const maxX = Math.max(...points.map((p) => p.x));
-        const minY = Math.min(...points.map((p) => p.y));
-        const maxY = Math.max(...points.map((p) => p.y));
-        ctx.strokeStyle = "rgb(0, 119, 255)";
-        ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+  let minX: number, maxX: number, minY: number, maxY: number;
 
-        ctx.fillStyle = "rgb(0, 119, 255)";
-        item.controlPoints.forEach((point) => {
-          ctx.beginPath();
-          ctx.arc(
-            point.x - 2,
-            point.y - 2,
-            0.01 * Math.min(x, y),
-            0,
-            2 * Math.PI
-          );
-          ctx.fill();
-          ctx.lineWidth = 4;
-          ctx.strokeStyle = "rgb(129, 188, 255)";
-          ctx.stroke();
-        });
-      }
+  if (item.shape === "circle") {
+    const [center, edge] = item.controlPoints;
+    const r = Math.sqrt((edge.x - center.x) ** 2 + (edge.y - center.y) ** 2);
+    minX = center.x - r;
+    maxX = center.x + r;
+    minY = center.y - r;
+    maxY = center.y + r;
+  } else if (item.shape === "ellipse") {
+    const [center, edge] = item.controlPoints;
+    const rx = Math.abs(edge.x - center.x);
+    const ry = Math.abs(edge.y - center.y);
+    minX = center.x - rx;
+    maxX = center.x + rx;
+    minY = center.y - ry;
+    maxY = center.y + ry;
+  } else {
+    minX = Math.min(...points.map((p) => p.x));
+    maxX = Math.max(...points.map((p) => p.x));
+    minY = Math.min(...points.map((p) => p.y));
+    maxY = Math.max(...points.map((p) => p.y));
+  }
+
+  ctx.strokeStyle = "rgb(0, 119, 255)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+
+  ctx.fillStyle = "rgb(0, 119, 255)";
+  item.controlPoints.forEach((point) => {
+    ctx.beginPath();
+    ctx.arc(
+      point.x - 2,
+      point.y - 2,
+      0.01 * Math.min(x, y),
+      0,
+      2 * Math.PI
+    );
+    ctx.fill();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "rgb(129, 188, 255)";
+    ctx.stroke();
+  });
+}
+
     });
 
     rendering.forEach((item) => {
@@ -327,55 +353,57 @@ export default function FrameComponent({
   }, [x, y, bgColor, mouseList, renderData, rendering, shape, id, grid]);
 
   return (
-  <div
-    style={{ aspectRatio: `${x} / ${y}`, position: "relative" }}
-    onMouseDown={(e) =>
-      handleMouseDown(
-        e,
-        canvasRef,
-        x,
-        y,
-        renderData,
-        setDraggingPointIndex,
-        setStartMousePos,
-        setDragging,
-        setId,
-        id
-      )
-    }
-    onMouseMove={(e) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
+    <div
+      style={{ aspectRatio: `${x} / ${y}`, position: "relative" }}
+      onMouseDown={(e) =>
+        handleMouseDown(
+          e,
+          canvasRef,
+          x,
+          y,
+          renderData,
+          setDraggingPointIndex,
+          setStartMousePos,
+          setDragging,
+          setId,
+          id
+        )
+      }
+      onMouseMove={(e) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
 
-      // Handle dragging
-      handleMouseMove(
-        e,
-        canvasRef,
-        x,
-        y,
-        dragging,
-        startMousePos,
-        renderData,
-        setRenderData,
-        draggingPointIndex,
-        id,
-        setStartMousePos
-      );
+        // Handle dragging
+        handleMouseMove(
+          e,
+          canvasRef,
+          x,
+          y,
+          dragging,
+          startMousePos,
+          renderData,
+          setRenderData,
+          draggingPointIndex,
+          id,
+          setStartMousePos
+        );
 
-      // Update mouse position
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = ((e.clientX - rect.left) / rect.width) * x;
-      const mouseY = ((e.clientY - rect.top) / rect.height) * y;
-      setMousePos?.({ x: mouseX, y: mouseY });
-      setMousePosHere({ x: mouseX, y: mouseY });
-    }}
-    onMouseUp={() => handleMouseUp(setDragging, setDraggingPointIndex, setStartMousePos)}
-    onClick={handleMouseClick}
-  >
-    <canvas
-      ref={canvasRef}
-      style={{ width: "100%", height: "100%", backgroundColor: bgColor }}
-    />
-  </div>
-);
+        // Update mouse position
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = ((e.clientX - rect.left) / rect.width) * x;
+        const mouseY = ((e.clientY - rect.top) / rect.height) * y;
+        setMousePos?.({ x: mouseX, y: mouseY });
+        setMousePosHere({ x: mouseX, y: mouseY });
+      }}
+      onMouseUp={() =>
+        handleMouseUp(setDragging, setDraggingPointIndex, setStartMousePos)
+      }
+      onClick={handleMouseClick}
+    >
+      <canvas
+        ref={canvasRef}
+        style={{ width: "100%", height: "100%", backgroundColor: bgColor }}
+      />
+    </div>
+  );
 }
