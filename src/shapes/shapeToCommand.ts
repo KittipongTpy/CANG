@@ -18,7 +18,7 @@ export function shapeToCommand(shape: Shape): string {
     case "circle": {
       const [center, edge] = shape.controlPoints;
       const r = Math.round(Math.hypot(edge.x - center.x, edge.y - center.y));
-      return `CIR ${round(center.x)} ${round(center.y)} $${r}${appendStyle()}`;
+      return `CIR ${round(center.x)} ${round(center.y)} ${r}${appendStyle()}`;
     }
     case "ellipse": {
       const [center, edge] = shape.controlPoints;
