@@ -1,6 +1,7 @@
 export function line(
   command: string,
-): string | { type: "line"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ; strokeWidth?: number} | null {
+): string | { type: "line"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ; strokeWidth?: number;
+  isFilled?: boolean;} | null {
   const parts = command.trim().split(/\s+/);
 
   if (parts.length !== 5 && parts.length !== 7 && parts.length !== 9) {
@@ -45,12 +46,14 @@ export function line(
 
 let color: string | undefined;
 let strokeWidth: number | undefined;
+let isFilled: boolean | undefined;
 
 if (parts.length === 5) {
   // ไม่มี FIL หรือ STR (ถูกต้อง)
 } else if (parts.length === 7) {
   if (parts[5].toUpperCase() === "FIL") {
     color = parts[6];
+    isFilled = true;
   } else if (parts[5].toUpperCase() === "BOR") {
     const width = parseFloat(parts[6]);
     if (isNaN(width)) {
@@ -65,6 +68,7 @@ if (parts.length === 5) {
     return "Syntax error: Expected 'FIL <color> BOR <width>' in that exact order.";
   }
   color = parts[6];
+  isFilled = true;
   const width = parseFloat(parts[8]);
   if (isNaN(width)) {
     return "Syntax error: strokeWidth must be a number.";
@@ -75,5 +79,5 @@ if (parts.length === 5) {
 }
 
  
-  return { type: "line", points, controlPoints: [[x1, y1], [x2, y2]], color , strokeWidth };
+  return { type: "line", points, controlPoints: [[x1, y1], [x2, y2]], color , strokeWidth ,isFilled};
 }

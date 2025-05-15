@@ -1,6 +1,6 @@
 export function circle(
   command: string,
-): string | { type: "circle"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ; strokeWidth? : number } | null {
+): string | { type: "circle"; points: [number, number][]; controlPoints?: [number, number][]; color?: string ; strokeWidth? : number ; isFilled?: boolean;} | null {
   const parts = command.trim().split(/\s+/);
 
   if (parts.length !== 4 && parts.length !== 6 && parts.length !== 8) {
@@ -49,10 +49,12 @@ export function circle(
   // Optional parsing
   let color: string | undefined;
   let strokeWidth: number | undefined;
+  let isFilled: boolean | undefined;
 
   if (parts.length === 6) {
     if (parts[4].toUpperCase() === "FIL") {
       color = parts[5];
+      isFilled = true;
     } else if (parts[4].toUpperCase() === "BOR") {
       const width = parseFloat(parts[5]);
       if (isNaN(width)) {
@@ -67,6 +69,7 @@ export function circle(
       return "Syntax error: Expected 'FIL <color> BOR <width>' in that order.";
     }
     color = parts[5];
+    isFilled = true;
     const width = parseFloat(parts[7]);
     if (isNaN(width)) {
       return "Syntax error: strokeWidth must be a number.";
@@ -74,5 +77,5 @@ export function circle(
     strokeWidth = width;
   }
 
-  return { type: "circle", points, controlPoints: [[cx, cy],[cx + r, cy]], color ,strokeWidth};
+  return { type: "circle", points, controlPoints: [[cx, cy],[cx + r, cy]], color ,strokeWidth, isFilled};
 }
