@@ -15,13 +15,13 @@ interface FrameProps {
   setMousePos?: (pos: { x: number; y: number }) => void;
   mousePos?: { x: number; y: number };
   shape?:
-    | "mouse"
-    | "line"
-    | "rectangle"
-    | "circle"
-    | "ellipse"
-    | "bezier"
-    | "hermite";
+  | "mouse"
+  | "line"
+  | "rectangle"
+  | "circle"
+  | "ellipse"
+  | "bezier"
+  | "hermite";
   renderData: {
     shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
     controlPoints: { x: number; y: number }[];
@@ -29,22 +29,26 @@ interface FrameProps {
     isFilled?: boolean;
     strokeWidth?: number;
     points?: { x: number; y: number }[];
+    rotation?: number;
+    rotationCenter?: { x: number; y: number };
   }[];
   setRenderData: React.Dispatch<
     React.SetStateAction<
       {
         shape:
-          | "line"
-          | "rectangle"
-          | "circle"
-          | "ellipse"
-          | "bezier"
-          | "hermite";
+        | "line"
+        | "rectangle"
+        | "circle"
+        | "ellipse"
+        | "bezier"
+        | "hermite";
         controlPoints: { x: number; y: number }[];
         color?: string;
         isFilled?: boolean;
         strokeWidth?: number;
         points?: { x: number; y: number }[];
+        rotation?: number;
+        rotationCenter?: { x: number; y: number };
       }[]
     >
   >;
@@ -140,9 +144,9 @@ export default function FrameComponent({
         const distance =
           Math.abs(
             (end.y - start.y) * clickX -
-              (end.x - start.x) * clickY +
-              end.x * start.y -
-              end.y * start.x
+            (end.x - start.x) * clickY +
+            end.x * start.y -
+            end.y * start.x
           ) / Math.sqrt((end.y - start.y) ** 2 + (end.x - start.x) ** 2);
 
         if (distance <= 5) {
@@ -246,6 +250,17 @@ export default function FrameComponent({
         );
       }
 
+      ctx.save();
+
+      const angle = (item.rotation ?? 0) * (Math.PI / 180);
+      const center =
+        item.rotationCenter ||
+        item.controlPoints[Math.floor(item.controlPoints.length / 2)];
+
+      ctx.translate(center.x, center.y);
+      ctx.rotate(angle);
+      ctx.translate(-center.x, -center.y);
+
       ctx.lineWidth = item.strokeWidth || 1;
       ctx.strokeStyle = item.color || "#000000";
       ctx.fillStyle = item.color || "#000000";
@@ -294,50 +309,50 @@ export default function FrameComponent({
         ctx.stroke();
       }
       if (index === id) {
-  let minX: number, maxX: number, minY: number, maxY: number;
+        let minX: number, maxX: number, minY: number, maxY: number;
 
-  if (item.shape === "circle") {
-    const [center, edge] = item.controlPoints;
-    const r = Math.sqrt((edge.x - center.x) ** 2 + (edge.y - center.y) ** 2);
-    minX = center.x - r;
-    maxX = center.x + r;
-    minY = center.y - r;
-    maxY = center.y + r;
-  } else if (item.shape === "ellipse") {
-    const [center, edge] = item.controlPoints;
-    const rx = Math.abs(edge.x - center.x);
-    const ry = Math.abs(edge.y - center.y);
-    minX = center.x - rx;
-    maxX = center.x + rx;
-    minY = center.y - ry;
-    maxY = center.y + ry;
-  } else {
-    minX = Math.min(...points.map((p) => p.x));
-    maxX = Math.max(...points.map((p) => p.x));
-    minY = Math.min(...points.map((p) => p.y));
-    maxY = Math.max(...points.map((p) => p.y));
-  }
+        if (item.shape === "circle") {
+          const [center, edge] = item.controlPoints;
+          const r = Math.sqrt((edge.x - center.x) ** 2 + (edge.y - center.y) ** 2);
+          minX = center.x - r;
+          maxX = center.x + r;
+          minY = center.y - r;
+          maxY = center.y + r;
+        } else if (item.shape === "ellipse") {
+          const [center, edge] = item.controlPoints;
+          const rx = Math.abs(edge.x - center.x);
+          const ry = Math.abs(edge.y - center.y);
+          minX = center.x - rx;
+          maxX = center.x + rx;
+          minY = center.y - ry;
+          maxY = center.y + ry;
+        } else {
+          minX = Math.min(...points.map((p) => p.x));
+          maxX = Math.max(...points.map((p) => p.x));
+          minY = Math.min(...points.map((p) => p.y));
+          maxY = Math.max(...points.map((p) => p.y));
+        }
 
-  ctx.strokeStyle = "rgb(0, 119, 255)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+        ctx.strokeStyle = "rgb(0, 119, 255)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
 
-  ctx.fillStyle = "rgb(0, 119, 255)";
-  item.controlPoints.forEach((point) => {
-    ctx.beginPath();
-    ctx.arc(
-      point.x - 2,
-      point.y - 2,
-      0.01 * Math.min(x, y),
-      0,
-      2 * Math.PI
-    );
-    ctx.fill();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "rgb(129, 188, 255)";
-    ctx.stroke();
-  });
-}
+        ctx.fillStyle = "rgb(0, 119, 255)";
+        item.controlPoints.forEach((point) => {
+          ctx.beginPath();
+          ctx.arc(
+            point.x - 2,
+            point.y - 2,
+            0.01 * Math.min(x, y),
+            0,
+            2 * Math.PI
+          );
+          ctx.fill();
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = "rgb(129, 188, 255)";
+          ctx.stroke();
+        });
+      }
 
     });
 

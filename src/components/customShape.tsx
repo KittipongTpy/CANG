@@ -7,7 +7,7 @@ import {
   Switch,
   Slider,
 } from "@heroui/react";
-import { MdEdit, MdDelete } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
 
 interface FrameProps {
   renderData: {
@@ -16,10 +16,43 @@ interface FrameProps {
     color?: string;
     isFilled?: boolean;
     strokeWidth?: number;
+    rotation?: number;
+    rotationCenter?: { x: number; y: number };
   }[];
   id: number;
   setId: React.Dispatch<React.SetStateAction<number | null>>;
   setRenderData: React.Dispatch<React.SetStateAction<any[]>>;
+}
+
+function getCenter(
+  points: { x: number; y: number }[],
+  shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite"
+): { x: number; y: number } {
+  if (shape === "circle" || shape === "ellipse") {
+    // For circle and ellipse, return the first point as the center
+    return points[0];
+  } else if (shape === "hermite") {
+    // For hermite, return the center of the first and second points
+    const [p1, p2] = points;
+    return {
+      x: (p1.x + p2.x) / 2,
+      y: (p1.y + p2.y) / 2,
+    };
+  } else {
+    // Default case: calculate the average of all points
+    const sum = points.reduce(
+      (acc, p) => ({
+        x: acc.x + p.x,
+        y: acc.y + p.y,
+      }),
+      { x: 0, y: 0 }
+    );
+
+    return {
+      x: sum.x / points.length,
+      y: sum.y / points.length,
+    };
+  }
 }
 
 export default function CustomShape({
@@ -78,6 +111,80 @@ export default function CustomShape({
               ))}
             </ul>
           </div>
+
+          {/* Rotation */}
+          <div className="mt-4">
+            <p className="font-semibold">Rotation</p>
+            <div className="flex items-center space-x-4">
+              {/* Slider */}
+              <Slider
+                className="max-w-md"
+                value={renderData[id].rotation || 0}
+                maxValue={360}
+                minValue={0}
+                step={1}
+                onChange={(value) => {
+                  const updatedData = [...renderData];
+                  const newAngle = Array.isArray(value) ? value[0] : value;
+
+                  const shape = updatedData[id];
+                  shape.rotation = newAngle;
+                  shape.rotationCenter = getCenter(shape.controlPoints, shape.shape);
+
+                  setRenderData(updatedData);
+                }}
+              />
+            </div>
+            <p className="text-sm text-gray-500"> {renderData[id].rotation || 0} degrees</p>
+
+            {/* Rotation angle label */}
+            <div className="flex items-center space-x-4 mt-2">
+              <label htmlFor="rotation-angle" className="font-semibold">
+                Rotation Angle:
+              </label>
+              <Input
+                type="number"
+                className="w-[80px]"
+                value={String(renderData[id].rotation || 0)} // Ensure value is a string
+                min={0}
+                max={360}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+
+                  // Allow empty input for editing
+                  if (inputValue === "") {
+                    const updatedData = [...renderData];
+                    updatedData[id].rotation = 0; // Default to 0 if empty
+                    setRenderData(updatedData);
+                    return;
+                  }
+
+                  const numericValue = parseFloat(inputValue);
+
+                  // Validate numeric value and enforce min/max constraints
+                  if (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 360) {
+                    const updatedData = [...renderData];
+                    updatedData[id].rotation = numericValue;
+                    updatedData[id].rotationCenter = getCenter(
+                      updatedData[id].controlPoints,
+                      updatedData[id].shape
+                    );
+                    setRenderData(updatedData);
+                  }
+                }}
+                onBlur={(e) => {
+                  // Enforce constraints on blur
+                  const numericValue = parseFloat(e.target.value);
+                  if (isNaN(numericValue) || numericValue < 0) {
+                    e.target.value = "0"; // Reset to min value
+                  } else if (numericValue > 360) {
+                    e.target.value = "360"; // Reset to max value
+                  }
+                }}
+              />
+            </div>
+          </div>
+
 
           {/* Color Picker */}
           <div className="mt-4 flex items-center space-x-2">
