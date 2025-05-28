@@ -15,13 +15,23 @@ interface FrameProps {
   setMousePos?: (pos: { x: number; y: number }) => void;
   mousePos?: { x: number; y: number };
   shape?:
-  | "mouse"
-  | "line"
-  | "rectangle"
-  | "circle"
-  | "ellipse"
-  | "bezier"
-  | "hermite";
+    | "mouse"
+    | "line"
+    | "rectangle"
+    | "circle"
+    | "ellipse"
+    | "bezier"
+    | "hermite";
+  setShape?: (
+    shape:
+      | "mouse"
+      | "line"
+      | "rectangle"
+      | "circle"
+      | "ellipse"
+      | "bezier"
+      | "hermite"
+  ) => void;
   renderData: {
     shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite";
     controlPoints: { x: number; y: number }[];
@@ -36,12 +46,12 @@ interface FrameProps {
     React.SetStateAction<
       {
         shape:
-        | "line"
-        | "rectangle"
-        | "circle"
-        | "ellipse"
-        | "bezier"
-        | "hermite";
+          | "line"
+          | "rectangle"
+          | "circle"
+          | "ellipse"
+          | "bezier"
+          | "hermite";
         controlPoints: { x: number; y: number }[];
         color?: string;
         isFilled?: boolean;
@@ -63,6 +73,7 @@ export default function FrameComponent({
   grid,
   setMousePos,
   shape,
+  setShape,
   renderData,
   setRenderData,
   id,
@@ -144,13 +155,14 @@ export default function FrameComponent({
         const distance =
           Math.abs(
             (end.y - start.y) * clickX -
-            (end.x - start.x) * clickY +
-            end.x * start.y -
-            end.y * start.x
+              (end.x - start.x) * clickY +
+              end.x * start.y -
+              end.y * start.x
           ) / Math.sqrt((end.y - start.y) ** 2 + (end.x - start.x) ** 2);
 
         if (distance <= 5) {
           setId(i);
+          if (setShape) setShape("mouse");
           shapeClicked = true;
           break;
         }
@@ -162,6 +174,7 @@ export default function FrameComponent({
           );
           if (distance <= 5) {
             setId(i);
+            if (setShape) setShape("mouse");
             shapeClicked = true;
             break;
           }
@@ -313,7 +326,9 @@ export default function FrameComponent({
 
         if (item.shape === "circle") {
           const [center, edge] = item.controlPoints;
-          const r = Math.sqrt((edge.x - center.x) ** 2 + (edge.y - center.y) ** 2);
+          const r = Math.sqrt(
+            (edge.x - center.x) ** 2 + (edge.y - center.y) ** 2
+          );
           minX = center.x - r;
           maxX = center.x + r;
           minY = center.y - r;
@@ -353,7 +368,6 @@ export default function FrameComponent({
           ctx.stroke();
         });
       }
-
     });
 
     rendering.forEach((item) => {
@@ -370,20 +384,22 @@ export default function FrameComponent({
   return (
     <div
       style={{ aspectRatio: `${x} / ${y}`, position: "relative" }}
-      onMouseDown={(e) =>
-        handleMouseDown(
-          e,
-          canvasRef,
-          x,
-          y,
-          renderData,
-          setDraggingPointIndex,
-          setStartMousePos,
-          setDragging,
-          setId,
-          id
-        )
-      }
+      onMouseDown={(e) => {
+        if (shape === "mouse") {
+          handleMouseDown(
+            e,
+            canvasRef,
+            x,
+            y,
+            renderData,
+            setDraggingPointIndex,
+            setStartMousePos,
+            setDragging,
+            setId,
+            id
+          );
+        }
+      }}
       onMouseMove={(e) => {
         const canvas = canvasRef.current;
         if (!canvas) return;

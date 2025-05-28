@@ -118,6 +118,7 @@ export default function CustomShape({
             <div className="flex items-center space-x-4">
               {/* Slider */}
               <Slider
+                aria-label="Rotation angle"
                 className="max-w-md"
                 value={renderData[id].rotation || 0}
                 maxValue={360}
@@ -225,6 +226,7 @@ export default function CustomShape({
             <div className="mt-4">
               <p className="font-semibold">Stroke Width:</p>
               <Slider
+                aria-label="Stroke Width"
                 className="max-w-md"
                 value={renderData[id].strokeWidth}
                 maxValue={20}
@@ -253,7 +255,6 @@ export default function CustomShape({
                 );
                 setRenderData(updatedData);
                 if (id !== null) {
-                  setRenderData(updatedData);
                   setId(null);
                 }
               }}
