@@ -258,6 +258,7 @@ export default function App() {
                       setMousePos={setMousePos}
                       mousePos={mousePos}
                       shape={shape}
+                      setShape={setShape}
                       renderData={renderData}
                       setRenderData={setRenderData}
                       id={shapeId}
