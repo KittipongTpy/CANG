@@ -46,12 +46,12 @@ interface FrameProps {
     React.SetStateAction<
       {
         shape:
-          | "line"
-          | "rectangle"
-          | "circle"
-          | "ellipse"
-          | "bezier"
-          | "hermite";
+        | "line"
+        | "rectangle"
+        | "circle"
+        | "ellipse"
+        | "bezier"
+        | "hermite";
         controlPoints: { x: number; y: number }[];
         color?: string;
         isFilled?: boolean;
@@ -155,9 +155,9 @@ export default function FrameComponent({
         const distance =
           Math.abs(
             (end.y - start.y) * clickX -
-              (end.x - start.x) * clickY +
-              end.x * start.y -
-              end.y * start.x
+            (end.x - start.x) * clickY +
+            end.x * start.y -
+            end.y * start.x
           ) / Math.sqrt((end.y - start.y) ** 2 + (end.x - start.x) ** 2);
 
         if (distance <= 5) {
@@ -368,6 +368,7 @@ export default function FrameComponent({
           ctx.stroke();
         });
       }
+
     });
 
     rendering.forEach((item) => {
