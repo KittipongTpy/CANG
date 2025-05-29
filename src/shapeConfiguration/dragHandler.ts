@@ -20,6 +20,7 @@ export function handleMouseDown(
   const selectedShape = renderData[id];
   let pointIndex = null;
 
+
   // Check if clicking on a control point
   selectedShape.controlPoints.forEach((point: { x: number; y: number }, index: number) => {
     const distance = Math.sqrt((mouseX - point.x) ** 2 + (mouseY - point.y) ** 2);
@@ -36,6 +37,16 @@ export function handleMouseDown(
 
   setStartMousePos({ x: mouseX, y: mouseY });
   setDragging(true);
+}
+
+// Helper function to calculate the center of control points
+function getShapeCenter(controlPoints: { x: number; y: number }[]) {
+  const sumX = controlPoints.reduce((sum, point) => sum + point.x, 0);
+  const sumY = controlPoints.reduce((sum, point) => sum + point.y, 0);
+  return {
+    x: sumX / controlPoints.length,
+    y: sumY / controlPoints.length,
+  };
 }
 
 export function handleMouseMove(
@@ -68,18 +79,39 @@ export function handleMouseMove(
       if (index !== id) return shape;
 
       if (draggingPointIndex !== null) {
+        // Move only the dragging control point
         const updatedControlPoints = [...shape.controlPoints];
         updatedControlPoints[draggingPointIndex] = {
           x: updatedControlPoints[draggingPointIndex].x + dx,
           y: updatedControlPoints[draggingPointIndex].y + dy,
         };
-        return { ...shape, controlPoints: updatedControlPoints };
+
+        // Update rotation center when control points change
+        const newRotationCenter = getShapeCenter(updatedControlPoints);
+
+        return {
+          ...shape,
+          controlPoints: updatedControlPoints,
+          rotationCenter: newRotationCenter
+        };
       } else {
+        // Move entire shape — use screen coordinates directly (no rotation transformation needed)
         const updatedControlPoints = shape.controlPoints.map((point: { x: number; y: number }) => ({
           x: point.x + dx,
           y: point.y + dy,
         }));
-        return { ...shape, controlPoints: updatedControlPoints };
+
+        // Update rotation center when entire shape moves
+        const newRotationCenter = shape.rotationCenter ? {
+          x: shape.rotationCenter.x + dx,
+          y: shape.rotationCenter.y + dy,
+        } : getShapeCenter(updatedControlPoints);
+
+        return {
+          ...shape,
+          controlPoints: updatedControlPoints,
+          rotationCenter: newRotationCenter
+        };
       }
     })
   );
