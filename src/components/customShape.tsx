@@ -8,6 +8,7 @@ import {
   Slider,
 } from "@heroui/react";
 import { MdDelete } from "react-icons/md";
+import { getCenter ,updateControlPointsAfterRotation } from "../shapes/geometryUtils";
 
 interface FrameProps {
   renderData: {
@@ -22,37 +23,6 @@ interface FrameProps {
   id: number;
   setId: React.Dispatch<React.SetStateAction<number | null>>;
   setRenderData: React.Dispatch<React.SetStateAction<any[]>>;
-}
-
-function getCenter(
-  points: { x: number; y: number }[],
-  shape: "line" | "rectangle" | "circle" | "ellipse" | "bezier" | "hermite"
-): { x: number; y: number } {
-  if (shape === "circle" || shape === "ellipse") {
-    // For circle and ellipse, return the first point as the center
-    return points[0];
-  } else if (shape === "hermite") {
-    // For hermite, return the center of the first and second points
-    const [p1, p2] = points;
-    return {
-      x: (p1.x + p2.x) / 2,
-      y: (p1.y + p2.y) / 2,
-    };
-  } else {
-    // Default case: calculate the average of all points
-    const sum = points.reduce(
-      (acc, p) => ({
-        x: acc.x + p.x,
-        y: acc.y + p.y,
-      }),
-      { x: 0, y: 0 }
-    );
-
-    return {
-      x: sum.x / points.length,
-      y: sum.y / points.length,
-    };
-  }
 }
 
 export default function CustomShape({
@@ -131,7 +101,14 @@ export default function CustomShape({
                   const shape = updatedData[id];
                   shape.rotation = newAngle;
                   shape.rotationCenter = getCenter(shape.controlPoints, shape.shape);
-
+                  
+                  // shape.controlPoints = updateControlPointsAfterRotation(
+                  //   shape.controlPoints,
+                  //   newAngle,
+                  //   shape.rotationCenter
+                  // );
+              
+                  //updatedData[id] = shape;
                   setRenderData(updatedData);
                 }}
               />

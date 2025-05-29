@@ -106,27 +106,68 @@ export default function FrameComponent({
     bezier: 4,
   };
 
-  const setRenderDataFunc = () => {
-    setRenderData((prevRenderData) => [
-      ...prevRenderData,
-      {
-        shape: shape as
-          | "line"
-          | "rectangle"
-          | "circle"
-          | "ellipse"
-          | "bezier"
-          | "hermite",
-        controlPoints: mouseList,
+  // Helper function to calculate the center of control points
+  const getShapeCenter = (controlPoints: { x: number; y: number }[]) => {
+    const sumX = controlPoints.reduce((sum, point) => sum + point.x, 0);
+    const sumY = controlPoints.reduce((sum, point) => sum + point.y, 0);
+    return {
+      x: sumX / controlPoints.length,
+      y: sumY / controlPoints.length,
+    };
+  };
 
-        color: "#808080",
-        isFilled: false,
-        strokeWidth: 1,
-      },
-    ]);
+  const setRenderDataFunc = () => {
+    const newShape = {
+      shape: shape as
+        | "line"
+        | "rectangle"
+        | "circle"
+        | "ellipse"
+        | "bezier"
+        | "hermite",
+      controlPoints: mouseList,
+      color: "#808080",
+      isFilled: false,
+      strokeWidth: 1,
+      rotation: 0,
+      rotationCenter: getShapeCenter(mouseList),
+    };
+
+    setRenderData((prevRenderData) => [...prevRenderData, newShape]);
     if (setId) setId(renderData.length);
     setRendering([]);
   };
+
+  // Function to rotate a shape
+  const rotateShape = (shapeIndex: number, angle: number) => {
+    setRenderData((prevData) =>
+      prevData.map((item, index) => {
+        if (index === shapeIndex) {
+          return {
+            ...item,
+            rotation: (item.rotation || 0) + angle,
+          };
+        }
+        return item;
+      })
+    );
+  };
+
+  // Handle keyboard input for rotation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (id !== null && shape === "mouse") {
+        if (e.key === "r" || e.key === "R") {
+          rotateShape(id, 15); // Rotate 15 degrees clockwise
+        } else if (e.key === "e" || e.key === "E") {
+          rotateShape(id, -15); // Rotate 15 degrees counter-clockwise
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [id, shape]);
 
   useEffect(() => {
     if (!shape) return;
@@ -257,6 +298,7 @@ export default function FrameComponent({
 
       if (!points.length) return;
 
+      // Update points in renderData for non-line shapes
       if (item.shape !== "line") {
         setRenderData((prev) =>
           prev.map((it, idx) => (idx === index ? { ...it, points } : it))
@@ -265,10 +307,9 @@ export default function FrameComponent({
 
       ctx.save();
 
-      const angle = (item.rotation ?? 0) * (Math.PI / 180);
-      const center =
-        item.rotationCenter ||
-        item.controlPoints[Math.floor(item.controlPoints.length / 2)];
+      // Apply rotation transformation
+      const angle = (item.rotation || 0) * (Math.PI / 180);
+      const center = item.rotationCenter || getShapeCenter(item.controlPoints);
 
       ctx.translate(center.x, center.y);
       ctx.rotate(angle);
@@ -321,6 +362,8 @@ export default function FrameComponent({
         }
         ctx.stroke();
       }
+
+      // Draw selection indicators
       if (index === id) {
         let minX: number, maxX: number, minY: number, maxY: number;
 
@@ -348,10 +391,12 @@ export default function FrameComponent({
           maxY = Math.max(...points.map((p) => p.y));
         }
 
+        // Draw bounding box
         ctx.strokeStyle = "rgb(0, 119, 255)";
         ctx.lineWidth = 1;
         ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
 
+        // Draw control points
         ctx.fillStyle = "rgb(0, 119, 255)";
         item.controlPoints.forEach((point) => {
           ctx.beginPath();
@@ -367,10 +412,19 @@ export default function FrameComponent({
           ctx.strokeStyle = "rgb(129, 188, 255)";
           ctx.stroke();
         });
+
+        // Draw rotation center
+        const rotCenter = item.rotationCenter || getShapeCenter(item.controlPoints);
+        ctx.fillStyle = "red";
+        ctx.beginPath();
+        ctx.arc(rotCenter.x, rotCenter.y, 3, 0, 2 * Math.PI);
+        ctx.fill();
       }
 
+      ctx.restore();
     });
 
+    // Draw rendering preview
     rendering.forEach((item) => {
       ctx.fillStyle = "#808080";
       ctx.fillRect(
@@ -383,59 +437,78 @@ export default function FrameComponent({
   }, [x, y, bgColor, mouseList, renderData, rendering, shape, id, grid]);
 
   return (
-    <div
-      style={{ aspectRatio: `${x} / ${y}`, position: "relative" }}
-      onMouseDown={(e) => {
-        if (shape === "mouse") {
-          handleMouseDown(
+    <div>
+      {/* Instructions */}
+      {id !== null && shape === "mouse" && (
+        <div style={{
+          position: "absolute",
+          top: "10px",
+          left: "10px",
+          background: "rgba(0,0,0,0.7)",
+          color: "white",
+          padding: "8px",
+          borderRadius: "4px",
+          fontSize: "12px",
+          zIndex: 1000
+        }}>
+          Press 'R' to rotate clockwise, 'E' to rotate counter-clockwise
+        </div>
+      )}
+
+      <div
+        style={{ aspectRatio: `${x} / ${y}`, position: "relative" }}
+        onMouseDown={(e) => {
+          if (shape === "mouse") {
+            handleMouseDown(
+              e,
+              canvasRef,
+              x,
+              y,
+              renderData,
+              setDraggingPointIndex,
+              setStartMousePos,
+              setDragging,
+              setId,
+              id
+            );
+          }
+        }}
+        onMouseMove={(e) => {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+
+          // Handle dragging
+          handleMouseMove(
             e,
             canvasRef,
             x,
             y,
+            dragging,
+            startMousePos,
             renderData,
-            setDraggingPointIndex,
-            setStartMousePos,
-            setDragging,
-            setId,
-            id
+            setRenderData,
+            draggingPointIndex,
+            id,
+            setStartMousePos
           );
+
+          // Update mouse position
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = ((e.clientX - rect.left) / rect.width) * x;
+          const mouseY = ((e.clientY - rect.top) / rect.height) * y;
+          setMousePos?.({ x: mouseX, y: mouseY });
+          setMousePosHere({ x: mouseX, y: mouseY });
+        }}
+        onMouseUp={() =>
+          handleMouseUp(setDragging, setDraggingPointIndex, setStartMousePos)
         }
-      }}
-      onMouseMove={(e) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        // Handle dragging
-        handleMouseMove(
-          e,
-          canvasRef,
-          x,
-          y,
-          dragging,
-          startMousePos,
-          renderData,
-          setRenderData,
-          draggingPointIndex,
-          id,
-          setStartMousePos
-        );
-
-        // Update mouse position
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = ((e.clientX - rect.left) / rect.width) * x;
-        const mouseY = ((e.clientY - rect.top) / rect.height) * y;
-        setMousePos?.({ x: mouseX, y: mouseY });
-        setMousePosHere({ x: mouseX, y: mouseY });
-      }}
-      onMouseUp={() =>
-        handleMouseUp(setDragging, setDraggingPointIndex, setStartMousePos)
-      }
-      onClick={handleMouseClick}
-    >
-      <canvas
-        ref={canvasRef}
-        style={{ width: "100%", height: "100%", backgroundColor: bgColor }}
-      />
+        onClick={handleMouseClick}
+      >
+        <canvas
+          ref={canvasRef}
+          style={{ width: "100%", height: "100%", backgroundColor: bgColor }}
+        />
+      </div>
     </div>
   );
 }
