@@ -381,7 +381,7 @@ export default function App() {
                       <p className="pl-4 text-gray-400 font-medium">
                         INIT &lt;width&gt; &lt;height&gt;
                         <br />
-                        <span className="text-gray-400">Ex. INIT 100 100</span>
+                        <span className="text-gray-400">Ex. INIT 1000 900</span>
                       </p>
                       <p className="mt-3">
                         <span className="font-bold text-gray-300">
@@ -392,27 +392,27 @@ export default function App() {
                         LIN &lt;x1&gt; &lt;y1&gt; &lt;x2&gt; &lt;y2&gt;
                         <br />
                         <span className="text-gray-400">
-                          Ex. LIN 15 10 55 60
+                          Ex. LIN 800 300 155 666
                         </span>
                       </p>
                       <p className="pl-4 text-gray-400 font-medium">
                         CIR &lt;center x&gt; &lt;center y&gt; &lt;radius&gt;
                         <br />
-                        <span className="text-gray-400">Ex. CIR 50 50 10</span>
+                        <span className="text-gray-400">CIR 350 550 310</span>
                       </p>
                       <p className="pl-4 text-gray-400 font-medium">
                         ELI &lt;center x&gt; &lt;center y&gt; &lt;a&gt;
                         &lt;b&gt;
                         <br />
                         <span className="text-gray-400">
-                          Ex. ELI 30 30 10 20
+                          Ex. ELI 300 300 150 200
                         </span>
                       </p>
                       <p className="pl-4 text-gray-400 font-medium">
                         REC &lt;x1&gt; &lt;y1&gt; &lt;x2&gt; &lt;y2&gt;
                         <br />
                         <span className="text-gray-400">
-                          Ex. REC 10 10 55 60
+                          Ex. REC 100 100 350 600
                         </span>
                       </p>
                       <p className="pl-4 text-gray-400 font-medium">
@@ -420,7 +420,7 @@ export default function App() {
                         &lt;R1x&gt; &lt;R1y&gt; &lt;R2x&gt; &lt;R2y&gt;
                         <br />
                         <span className="text-gray-400">
-                          Ex. HER 1 1 90 80 25 35 75 85
+                          Ex. HER 100 150 900 800 250 350 750 850
                         </span>
                       </p>
                       <p className="pl-4 text-gray-400 font-medium">
@@ -428,7 +428,7 @@ export default function App() {
                         &lt;x2&gt; &lt;y2&gt; &lt;x3&gt; &lt;y3&gt;
                         <br />
                         <span className="text-gray-400">
-                          Ex. BEZ 20 20 85 95 50 35 15 10
+                          Ex. BEZ 200 250 850 950 500 350 150 100
                         </span>
                       </p>
 
@@ -441,14 +441,14 @@ export default function App() {
                         FIL &lt;colorname&gt;
                         <br />
                         <span className="text-gray-400">
-                          Ex. CIR 50 50 10 FIL red
+                          Ex. CIR 350 550 310 FIL #ed3131
                         </span>
                       </p>
                       <p className="pl-4 text-gray-400 font-medium">
                         BOR &lt;stroke width&gt;
                         <br />
                         <span className="text-gray-400">
-                          Ex. REC 10 10 55 60 BOR 4
+                          Ex. REC 100 100 350 600 BOR 4
                         </span>
                       </p>
                     </div>
